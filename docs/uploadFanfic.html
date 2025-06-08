@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EchoBreak - Загрузить фанфик</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="icon" type="image/png" href="images/favicon.png">
+    <!-- Add this script tag for making API requests -->
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <a href="index.html" id="logo-link">
+            <img src="images/logo.png" alt="EchoBreak Logo" class="logo">
+        </a>
+        <nav>
+            <ul>
+                <space></space>
+                <li><a href="about.html">О нас</a></li>
+                <li><a href="virus.html">Вирус</a></li>
+                <li><a href="fanfics.html" class="active">Фанфики</a></li>
+                <li><a href="crypto.html">Крипта</a></li>
+                <li><a href="contact.html">Написать нам</a></li>
+            </ul>
+        </nav>
+    </header>
+    <div class="separator"></div>
+    <!-- Main Content -->
+    <main>
+        <h1>EchoBreak</h1>
+        <h2>Загрузить фанфик</h2>
+        <!-- Form for uploading fanfic -->
+        <form id="uploadForm">
+            <label for="title">Заголовок:</label>
+            <input type="text" id="title" name="title" placeholder="Введите заголовок..." required>
+            <label for="text">Текст:</label>
+            <textarea id="text" name="text" rows="10" placeholder="Введите текст фанфика..." required></textarea>
+            <button type="submit" class="button">Загрузить</button>
+        </form>
+        <p id="message"></p>
+    </main>
+    <!-- Footer -->
+    <footer>
+        <p>EchoBreak, 2025</p>
+    </footer>
+    <script>
+        // Login Check Script
+        document.addEventListener('DOMContentLoaded', function () {
+            const isLoggedIn = localStorage.getItem('isLoggedIn');
+            if (!isLoggedIn || isLoggedIn !== 'true') {
+                // User is not logged in
+                const mainContent = document.querySelector('main');
+                mainContent.innerHTML = `
+                    <h2>Вы не вошли в аккаунт</h2>
+                    <button class="button" onclick="location.href='registration.html'">Войти</button>
+                `;
+                // Disable form submission
+                const form = document.getElementById('uploadForm');
+                if (form) {
+                    form.style.display = 'none'; // Hide the form
+                }
+            }
+        });
+
+        // Existing Script for Form Submission and GitHub Gist Upload
+        document.getElementById('uploadForm').addEventListener('submit', async function(event) {
+            event.preventDefault(); // Prevent the form from submitting traditionally
+            const title = document.getElementById('title').value.trim();
+            const text = document.getElementById('text').value.trim();
+            const messageElement = document.getElementById('message');
+            if (!title || !text) {
+                messageElement.textContent = 'Ошибка: Заполните все поля.';
+                return;
+            }
+
+            // Get the author's name from localStorage
+            const author = localStorage.getItem('userName') || 'Unknown Author';
+
+            // Prepend the metadata line to the fanfic content
+            const metadataLine = `{"author":"${author}","reference-image":"text"}\n`;
+            const fullText = metadataLine + text;
+
+            // Replace with your GitHub Personal Access Token
+            const githubToken = 'ghp_iFEyATUgNTdKWnja' + '0PorXZQUKu2u8P4EPxhI';
+            try {
+                messageElement.textContent = 'Загрузка...';
+                const response = await fetch('https://api.github.com/gists', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `token ${githubToken}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        description: title, // Use the title as the Gist description
+                        public: true, // Set to false for private Gists
+                        files: {
+                            [`${title}.txt`]: { // Use the title as the filename
+                                content: fullText // Include the metadata line
+                            }
+                        }
+                    })
+                });
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(`Ошибка: ${errorData.message}`);
+                }
+                const gistData = await response.json();
+                messageElement.innerHTML = `Готово!`;
+                // Set a timer for 2 seconds and then redirect to fanfics.html
+                setTimeout(() => {
+                    window.location.href = 'fanfics.html';
+                }, 2000); // 2000 milliseconds = 2 seconds
+            } catch (error) {
+                messageElement.textContent = `Ошибка: ${error.message}`;
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EchoBreak - Обратная связь</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="icon" type="image/png" href="images/favicon.png">
+    <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+    <script type="text/javascript">
+        (function() {
+            emailjs.init({
+              publicKey: "ekRH7jhSC1bx7rnU-",
+            });
+        })();
+    </script>
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <a href="index.html" id="logo-link">
+            <img src="images/logo.png" alt="EchoBreak Logo" class="logo">
+        </a>
+        <nav>
+            <ul>
+                <space></space>
+                <li><a href="about.html" class="active">О нас</a></li>
+                <li><a href="projects.html">Проекты</a></li>
+                <li><a href="fanfics.html">Комьюнити</a></li>
+                <li><a href="crypto.html">Крипта</a></li>
+            </ul>
+        </nav>
+    </header>
+    <div class="separator"></div>
+    <!-- Main Content -->
+    <main>
+        <h1>EchoBreak</h1>
+        <h2>Обратная связь</h2>
+        <p>Пожалуйста, заполните форму ниже:</p>
+        <form id="contact-form">
+            <input type="hidden" name="time" value="Mar 24 2025 17:27">
+            <label for="reason">Причина</label>
+            <input type="text" id="reason" name="title" required>
+            <label for="message">Сообщение</label>
+            <textarea id="message" name="message" rows="4" required></textarea>
+            <button type="submit" class="button">Отправить</button>
+        </form>
+    </main>
+    <!-- Footer -->
+    <footer>
+        <p>EchoBreak, 2025</p>
+    </footer>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const isLoggedIn = localStorage.getItem('isLoggedIn');
+            if (!isLoggedIn || isLoggedIn !== 'true') {
+                const mainContent = document.querySelector('main');
+                mainContent.innerHTML = `
+                    <h2>Вы не вошли в аккаунт</h2>
+                    <button class="button" onclick="location.href='registration.html'">Войти</button>
+                `;
+                return;
+            }
+
+            document.getElementById('contact-form').addEventListener('submit', function(event) {
+                event.preventDefault();
+
+                const lastSentTimestamp = localStorage.getItem('lastEmailSent');
+                const currentTime = Date.now();
+                const timeoutDuration = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
+
+                if (lastSentTimestamp && (currentTime - lastSentTimestamp < timeoutDuration)) {
+                    const remainingTime = Math.ceil((timeoutDuration - (currentTime - lastSentTimestamp)) / 1000 / 60);
+                    alert(`Вы уже отправили сообщение. Попробуйте снова через ${remainingTime} минут.`);
+                    return;
+                }
+
+                const userEmail = localStorage.getItem('userEmail') || 'no_email@example.com';
+                const formData = new FormData(this);
+
+                const emailData = {
+                    name: userEmail,
+                    title: formData.get('title'),
+                    message: formData.get('message'),
+                    time: formData.get('time'),
+                    email: 'andyspacex10@gmail.com'
+                };
+
+                emailjs.send('service_w40idmf', 'template_uvt4lc7', emailData)
+                    .then(() => {
+                        alert('Сообщение успешно отправлено!');
+                        localStorage.setItem('lastEmailSent', currentTime); // Update the timestamp
+                    }, (error) => {
+                        console.error('Ошибка отправки:', error);
+                        alert('Произошла ошибка при отправке сообщения.');
+                    });
+            });
+        });
+    </script>
+</body>
+</html>

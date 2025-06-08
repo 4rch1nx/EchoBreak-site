@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>EchoBreak - Крипта</title>
+    <link rel="stylesheet" href="style.css" />
+    <link rel="icon" type="image/png" href="images/favicon.png" />
+
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script> 
+</head>
+<body>
+
+<header>
+    <a href="index.html" id="logo-link">
+        <img src="images/logo.png" alt="EchoBreak Logo" class="logo">
+    </a>
+    <nav>
+        <ul>
+            <space></space>
+            <li><a href="about.html">О нас</a></li>
+            <li><a href="projects.html">Проекты</a></li>
+            <li><a href="fanfics.html">Комьюнити</a></li>
+            <li><a href="crypto.html" class="active">Крипта</a></li>
+        </ul>
+    </nav>
+</header>
+
+<div class="separator"></div>
+
+<main>
+    <h1>EchoBreak</h1>
+    <h2>Крипта</h2>
+    <h3>For educational purposes only!</h3>
+
+    <div id="xmr-stats">
+        <div class="crypto-card">
+            <div class="crypto-card-body">
+                <div class="balance">
+                    <span>Выплачено:</span>
+                    <div class="amount" id="xmr-amount">Загрузка...</div>
+                    <div class="amount-rub" id="rub-amount"></div>
+                </div>
+                <div class="currency-logo">
+                    <img src="images/monero-logo.png" alt="Monero Logo">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Chart Container -->
+    <div class="chart-container" style="width: 90%; max-width: 600px; margin: 40px auto;">
+        <canvas id="xmrRubChart"></canvas>
+    </div>
+</main>
+
+<footer>
+    <p>EchoBreak, 2025</p>
+</footer>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const xmrAmount = document.getElementById('xmr-amount');
+        const rubAmount = document.getElementById('rub-amount');
+
+        const WALLET_ADDRESS = '42u3Aeoqq53Y8bKGT7RdawhtcS9AqYuKEDwwYL4BiS5s34964uaJU2zWB7miadNEBWCjcMXtMjcsa6boEZmpaeTV4ESEqpU';
+
+        // Fetch wallet stats
+        fetch(`https://api.moneroocean.stream/miner/${WALLET_ADDRESS}/stats`) 
+            .then(response => {
+                if (!response.ok) throw new Error('Wallet fetch error');
+                return response.json();
+            })
+            .then(data => {
+                const totalDue = parseFloat(data.amtPaid / 1000000000000 || 0).toFixed(6);
+
+                // Fetch current price
+                return fetch('https://api.coingecko.com/api/v3/simple/price?ids=monero&vs_currencies=rub')
+                    .then(res => {
+                        if (!res.ok) throw new Error('Price fetch error');
+                        return res.json();
+                    })
+                    .then(priceData => {
+                        const xmrPriceRub = priceData.monero.rub;
+                        const rubValue = (parseFloat(totalDue) * xmrPriceRub).toFixed(2);
+                        xmrAmount.textContent = `${totalDue} XMR`;
+                        rubAmount.textContent = `${rubValue} ₽`;
+
+                        // Now fetch historical data for the chart
+                        return fetch('https://api.coingecko.com/api/v3/coins/monero/market_chart?vs_currency=rub&days=30')
+                            .then(res => {
+                                if (!res.ok) throw new Error('Historical fetch error');
+                                return res.json();
+                            });
+                    })
+                    .then(chartData => {
+                        const prices = chartData.prices.map(p => p[1]); // Extract price values
+                        const timestamps = chartData.prices.map(p => p[0]); // Extract timestamps
+
+                        // Sample data to reduce the number of points
+                        const sampledPrices = [];
+                        const sampledTimestamps = [];
+                        const step = Math.ceil(timestamps.length / 30); // Show approximately 30 points
+
+                        for (let i = 0; i < timestamps.length; i += step) {
+                            sampledPrices.push(prices[i]);
+                            sampledTimestamps.push(timestamps[i]);
+                        }
+
+                        // Convert timestamps to readable dates
+                        const labels = sampledTimestamps.map(timestamp => {
+                            const date = new Date(timestamp);
+                            return date.toISOString().split('T')[0]; // Format as YYYY-MM-DD
+                        });
+
+                        drawChart(labels, sampledPrices);
+                    })
+                    .catch(chartError => {
+                        console.warn("Failed to load real chart data:", chartError.message);
+                        drawFallbackChart();
+                    });
+            })
+            .catch(error => {
+                console.error('Error fetching data:', error);
+                xmrAmount.textContent = '—';
+                rubAmount.textContent = '—';
+                drawFallbackChart();
+            });
+    });
+
+    function drawChart(labels, data) {
+        const ctx = document.getElementById('xmrRubChart').getContext('2d');
+        renderChart(labels, data);
+    }
+
+    function drawFallbackChart() {
+        const days = Array.from({ length: 30 }, (_, i) => `Day ${i + 1}`);
+        const xmrToRubData = [
+            2800, 2850, 2830, 2780, 2810, 2890, 2900, 2950, 3000, 3020,
+            3010, 3030, 3050, 3070, 3100, 3120, 3110, 3130, 3150, 3170,
+            3190, 3210, 3200, 3220, 3250, 3270, 3260, 3280, 3300, 3320
+        ];
+        renderChart(days, xmrToRubData);
+    }
+
+    function renderChart(labels, data) {
+        const ctx = document.getElementById('xmrRubChart').getContext('2d');
+
+        // Determine line color based on trend
+        const firstPrice = data[0];
+        const lastPrice = data[data.length - 1];
+        const borderColor = lastPrice > firstPrice ? '#00ff00' : '#ff0000'; // Green for up, Red for down 
+
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'XMR to RUB (Last 30 Days)',
+                    data: data,
+                    borderColor: borderColor,
+                    backgroundColor: 'rgba(210, 83, 84, 0.1)',
+                    tension: 0.3,
+                    fill: true,
+                    pointRadius: 2,
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: false,
+                        ticks: {
+                            color: '#fff'
+                        }
+                    },
+                    x: {
+                        ticks: {
+                            color: '#fff',
+                            callback: function (value, index, values) {
+                                // Show only every 5th label to avoid overcrowding
+                                return index % 3 === 0 ? value : '';
+                            }
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        labels: {
+                            color: '#fff'
+                        }
+                    }
+                }
+            }
+        });
+    }
+</script>
+
+</body>
+</html>

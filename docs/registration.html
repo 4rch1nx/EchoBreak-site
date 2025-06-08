@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EchoBreak - Регистрация</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="icon" type="image/png" href="images/favicon.png">
+    <!-- Import CryptoJS for password hashing -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <a href="index.html" id="logo-link" class="active">
+            <img src="images/logo.png" alt="EchoBreak Logo" class="logo">
+        </a>
+        <nav>
+            <ul>
+                <space></space>
+                <li><a href="about.html">О нас</a></li>
+                <li><a href="virus.html">Вирус</a></li>
+                <li><a href="fanfics.html">Фанфики</a></li>
+                <li><a href="crypto.html">Крипта</a></li>
+                <li><a href="contact.html">Написать нам</a></li>
+            </ul>
+        </nav>
+    </header>
+    <div class="separator"></div>
+    <!-- Main Content -->
+    <main>
+        <h1>EchoBreak</h1>
+        <h2>Регистрация</h2>
+        <p>Пожалуйста, заполните форму ниже:</p>
+        <form id="registerForm">
+            <label for="reg-name">Имя</label>
+            <input type="text" id="reg-name" name="reg-name" required>
+            <label for="email">E-mail</label>
+            <input type="email" id="email" name="email" required>
+            <label for="password">Пароль</label>
+            <input type="password" id="password" name="password" required>
+            <button type="submit" class="button">Зарегистрироваться</button>
+            <button type="button" class="button" onclick="location.href='login.html'">Войти</button>
+        </form>
+        <p id="message"></p>
+    </main>
+    <!-- Footer -->
+    <footer>
+        <p>EchoBreak, 2025</p>
+    </footer>
+    <script>
+        // GitHub Personal Access Token (Replace with your token)
+        const githubToken = 'ghp_iFEyATUgNTdKWnja' + '0PorXZQUKu2u8P4EPxhI';
+
+        document.getElementById('registerForm').addEventListener('submit', async function(event) {
+            event.preventDefault();
+            const name = document.getElementById('reg-name').value.trim();
+            const email = document.getElementById('email').value.trim();
+            const password = document.getElementById('password').value.trim();
+            const messageElement = document.getElementById('message');
+
+            if (!name || !email || !password) {
+                messageElement.textContent = 'Ошибка: Заполните все поля.';
+                return;
+            }
+
+            try {
+                messageElement.textContent = 'Проверка данных...';
+                const fileName = `user${email}`;
+
+                // Fetch all Gists to check if the user already exists
+                const response = await fetch('https://api.github.com/gists', {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `token ${githubToken}`
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error('Ошибка при получении данных.');
+                }
+
+                const gists = await response.json();
+                const userGist = gists.find(gist => gist.files && gist.files[fileName]);
+
+                if (userGist) {
+                    messageElement.textContent = 'Ошибка: Пользователь с таким email уже зарегистрирован.';
+                    return;
+                }
+
+                // Hash the password using SHA-256
+                const hashedPassword = CryptoJS.SHA256(password).toString(CryptoJS.enc.Hex);
+
+                // Create a new Gist for the user with the hashed password
+                messageElement.textContent = 'Регистрация...';
+                const createResponse = await fetch('https://api.github.com/gists', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `token ${githubToken}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        description: `User registration for ${email}`,
+                        public: false, // Keep the registration data private
+                        files: {
+                            [fileName]: { // Use "user" + email as the filename
+                                content: JSON.stringify({ 
+                                    name, 
+                                    email, 
+                                    password: hashedPassword, // Store the hashed password
+                                    userToken: '' // Add empty userToken
+                                })
+                            }
+                        }
+                    })
+                });
+
+                if (!createResponse.ok) {
+                    const errorData = await createResponse.json();
+                    throw new Error(`Ошибка: ${errorData.message}`);
+                }
+
+                messageElement.textContent = 'Вы успешно зарегистрировались!';
+                setTimeout(() => {
+                    window.location.href = 'login.html'; // Redirect to login page
+                }, 2000);
+            } catch (error) {
+                messageElement.textContent = `Ошибка: ${error.message}`;
+            }
+        });
+    </script>
+</body>
+</html>

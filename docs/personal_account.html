@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EchoBreak - Личный кабинет</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="icon" type="image/png" href="images/favicon.png">
+    <!-- Add this script tag for making API requests -->
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <a href="index.html" id="logo-link" class="active">
+            <img src="images/logo.png" alt="EchoBreak Logo" class="logo">
+        </a>
+        <nav>
+            <ul>
+                <space></space>
+                <li><a href="about.html">О нас</a></li>
+                <li><a href="virus.html">Вирус</a></li>
+                <li><a href="fanfics.html">Фанфики</a></li>
+                <li><a href="crypto.html">Крипта</a></li>
+                <li><a href="contact.html">Написать нам</a></li>
+            </ul>
+        </nav>
+    </header>
+    <div class="separator"></div>
+    <!-- Main Content -->
+    <main>
+        <!-- Tab Content -->
+        <div class="tab-content">
+            <div id="profile-tab" class="tab-pane active">
+                <h2>${role}</h2>
+                <!-- Avatar Container -->
+                <div class="avatar-container">
+                    <div class="button-group">
+                        <button class="transparent-button" id="addPhotoButton">Добавить фото</button>
+                    </div>
+                    <div class="avatar">
+                        <img src="images/avatar-placeholder.png" id="user-avatar" class="circular-avatar">
+                    </div>
+                </div>
+                <!-- User Information -->
+                <div class="user-info">
+                    <left-label>Имя:</left-label>
+                    <div class="rounded-rectangle">
+                        <p id="nameField">${name}</p>
+                    </div>
+                    <left-label>Почта:</left-label>
+                    <div class="rounded-rectangle">
+                        <p id="emailField">${email}</p>
+                    </div>
+                    <left-label>Ключ активации:</left-label>
+                    <div class="rounded-rectangle">
+                        <p id="activationKeyField"></p>
+                    </div>
+                </div>
+                <!-- Buttons -->
+                <div class="buttons-container">
+                    <button class="transparent-button" id="changePasswordButton">Сменить пароль</button>
+                    <button class="button" id="logoutButton">Выйти</button>
+                </div>
+            </div>
+        </div>
+    </main>
+    <!-- Footer -->
+    <footer>
+        <p>EchoBreak, 2025</p>
+    </footer>
+    <script>
+    document.addEventListener('DOMContentLoaded', async function () {
+        const isLoggedIn = localStorage.getItem('isLoggedIn');
+        if (!isLoggedIn || isLoggedIn !== 'true') {
+            // User is not logged in
+            const mainContent = document.querySelector('main');
+            mainContent.innerHTML = `
+                <h2>Вы не вошли в аккаунт</h2>
+                <button class="button" onclick="location.href='registration.html'">Войти</button>
+            `;
+            return; // Stop further execution
+        }
+        // If the user is logged in, fetch their email from localStorage
+        const email = localStorage.getItem('userEmail');
+        if (!email) {
+            const mainContent = document.querySelector('main');
+            mainContent.innerHTML = `
+                <h2>Ошибка: Данные пользователя не найдены</h2>
+                <button class="button" onclick="location.href='registration.html'">Войти</button>
+            `;
+            return;
+        }
+        const githubToken = 'ghp_iFEyATUgNTdKWnja' + '0PorXZQUKu2u8P4EPxhI';
+        try {
+            const response = await fetch('https://api.github.com/gists', {
+                method: 'GET',
+                headers: {
+                    'Authorization': `token ${githubToken}`
+                }
+            });
+            if (!response.ok) {
+                throw new Error('Ошибка при получении данных.');
+            }
+            const gists = await response.json();
+            const fileName = `user${email}`;
+            const userGist = gists.find(gist => gist.files && gist.files[fileName]);
+            if (!userGist) {
+                const mainContent = document.querySelector('main');
+                mainContent.innerHTML = `
+                    <h2>Ошибка: Пользователь не найден</h2>
+                    <button class="button" onclick="location.href='registration.html'">Войти</button>
+                `;
+                return;
+            }
+            const rawUrl = userGist.files[fileName]?.raw_url;
+            if (!rawUrl) {
+                const mainContent = document.querySelector('main');
+                mainContent.innerHTML = `
+                    <h2>Ошибка: Файл пользователя пуст</h2>
+                    <button class="button" onclick="location.href='registration.html'">Войти</button>
+                `;
+                return;
+            }
+            const fileResponse = await fetch(rawUrl);
+            if (!fileResponse.ok) {
+                throw new Error('Ошибка: Не удалось загрузить содержимое файла.');
+            }
+            const fileContent = await fileResponse.text();
+            const userData = JSON.parse(fileContent);
+            // Populate the user's profile information
+            document.querySelector('#profile-tab h2').textContent = `${userData.role || 'Пользователь'}`;
+            document.getElementById('nameField').textContent = `${userData.name}`;
+            document.getElementById('emailField').textContent = `${userData.email}`;
+            // Check and Load Profile Picture on Page Load
+            const profilePicFileName = `$${userData.name}$${userData.email}_ProfilePic`;
+            const profilePicFileExists = userGist.files[profilePicFileName];
+            const userAvatar = document.getElementById('user-avatar');
+            if (profilePicFileExists) {
+                const profilePicRawUrl = profilePicFileExists.raw_url;
+                const profilePicResponse = await fetch(profilePicRawUrl);
+                if (profilePicResponse.ok) {
+                    const profilePicBase64 = await profilePicResponse.text();
+                    userAvatar.src = profilePicBase64; // Set the Base64 image as the avatar source
+                }
+            }
+            // Handle Profile Picture Upload
+            const addPhotoButton = document.getElementById('addPhotoButton');
+            addPhotoButton.addEventListener('click', async function () {
+                const input = document.createElement('input');
+                input.type = 'file';
+                input.accept = 'image/*';
+                input.onchange = async function (event) {
+                    const file = event.target.files[0];
+                    if (!file) {
+                        alert('Файл не выбран.');
+                        return;
+                    }
+                    const reader = new FileReader();
+                    reader.onload = async function (e) {
+                        const base64Image = e.target.result.split(',')[1]; // Extract Base64 part
+                        try {
+                            // Crop the image to a square
+                            const img = new Image();
+                            img.src = e.target.result;
+                            img.onload = async function () {
+                                const canvas = document.createElement('canvas');
+                                const ctx = canvas.getContext('2d');
+                                const size = Math.min(img.width, img.height); // Square size
+                                canvas.width = size;
+                                canvas.height = size;
+                                // Crop the image to a square
+                                const offsetX = (img.width - size) / 2;
+                                const offsetY = (img.height - size) / 2;
+                                ctx.drawImage(img, offsetX, offsetY, size, size, 0, 0, size, size);
+                                // Resize the cropped image to 128x128
+                                const resizedCanvas = document.createElement('canvas');
+                                const resizedCtx = resizedCanvas.getContext('2d');
+                                const maxSize = 128; // Set the maximum width/height for the avatar
+                                resizedCanvas.width = maxSize;
+                                resizedCanvas.height = maxSize;
+                                resizedCtx.drawImage(canvas, 0, 0, maxSize, maxSize);
+                                
+                                // Crop the image to a circle
+                                const circleCanvas = document.createElement('canvas');
+                                const circleCtx = circleCanvas.getContext('2d');
+                                circleCanvas.width = maxSize;
+                                circleCanvas.height = maxSize;
+                                circleCtx.beginPath();
+                                circleCtx.arc(maxSize / 2, maxSize / 2, maxSize / 2, 0, Math.PI * 2, true);
+                                circleCtx.closePath();
+                                circleCtx.clip();
+                                circleCtx.drawImage(resizedCanvas, 0, 0, maxSize, maxSize);
+                                
+                                const circularBase64Image = circleCanvas.toDataURL('image/png');
+                                const finalBase64Image = circularBase64Image.split(',')[1];
+                                
+                                // Update the Gist with the new profile picture
+                                const updateResponse = await fetch(userGist.url, {
+                                    method: profilePicFileExists ? 'PATCH' : 'POST',
+                                    headers: {
+                                        'Authorization': `token ${githubToken}`,
+                                        'Content-Type': 'application/json'
+                                    },
+                                    body: JSON.stringify({
+                                        files: {
+                                            [profilePicFileName]: {
+                                                content: `data:image/png;base64,${finalBase64Image}`
+                                            }
+                                        }
+                                    })
+                                });
+                                if (!updateResponse.ok) {
+                                    throw new Error('Ошибка при обновлении данных.');
+                                }
+                                // Update the displayed avatar with the cropped and resized image
+                                userAvatar.src = circularBase64Image;
+                                // Show success alert with Gist link
+                                const gistLink = userGist.html_url;
+                                // alert(`Изображение успешно сохранено в Gist! Просмотреть можно по ссылке: ${gistLink}`);
+                            };
+                        } catch (error) {
+                            alert(`Ошибка: ${error.message}`);
+                        }
+                    };
+                    reader.readAsDataURL(file); // Read the file as Base64
+                };
+                input.click(); // Trigger the file input dialog
+            });
+
+            // Handle Activation Key Section
+            const activationKeyField = document.getElementById('activationKeyField');
+            let userToken = userData.userToken || '';
+            // Ensure userToken is treated as an empty string if undefined or null
+            userToken = userToken.trim() === '' ? '' : userToken;
+            if (userToken === '') {
+                // Display text field for entering activation key
+                activationKeyField.innerHTML = `
+                    <input type="text" id="userTokenID" name="userTokenID" placeholder="Введите ключ активации" required>
+                    <button class="button" id="saveActivationKeyButton">Сохранить ключ</button>
+                `;
+                // Save Activation Key Button
+                document.getElementById('saveActivationKeyButton').addEventListener('click', async function () {
+                    const activationKeyInput = document.getElementById('userTokenID'); // Use the updated ID
+                    const activationKey = activationKeyInput.value.trim();
+                    if (!activationKey) {
+                        alert('Введите ключ активации.');
+                        return;
+                    }
+                    // Update the user's Gist file with the activation key
+                    const updatedUserData = { ...userData, userToken: activationKey };
+                    const updatedFileContent = JSON.stringify(updatedUserData);
+                    try {
+                        const updateResponse = await fetch(userGist.url, {
+                            method: 'PATCH',
+                            headers: {
+                                'Authorization': `token ${githubToken}`,
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({
+                                files: {
+                                    [fileName]: {
+                                        content: updatedFileContent
+                                    }
+                                }
+                            })
+                        });
+                        if (!updateResponse.ok) {
+                            throw new Error('Ошибка при обновлении данных.');
+                        }
+                        // Save the activation key to localStorage
+                        localStorage.setItem('userToken', activationKey);
+                        // Update the UI
+                        activationKeyField.innerHTML = `
+                            <p>${activationKey}</p>
+                        `;
+                    } catch (error) {
+                        alert(`Ошибка: ${error.message}`);
+                    }
+                });
+            } else {
+                // Display the activation key as a paragraph
+                let activationKeyHTML = '';
+                if (userToken === 'rejected') {
+                    activationKeyHTML = `
+                        <p style="color: #d25354;">${userToken}</p>
+                    `;
+                } else {
+                    activationKeyHTML = `
+                        <p>${userToken}</p>
+                    `;
+                }
+                activationKeyField.innerHTML = activationKeyHTML;
+            }
+            // Add event listener for logout button
+            const logoutButton = document.getElementById('logoutButton');
+            logoutButton.addEventListener('click', function () {
+                // Clear login status and user data
+                localStorage.removeItem('isLoggedIn');
+                localStorage.removeItem('userEmail');
+                window.location.href = 'index.html'; // Redirect to homepage
+            });
+            // Add event listener for change password button
+            const changePasswordButton = document.getElementById('changePasswordButton');
+            changePasswordButton.addEventListener('click', function () {
+                window.location.href = 'change_password.html'; // Redirect to change password page
+            });
+        } catch (error) {
+            const mainContent = document.querySelector('main');
+            mainContent.innerHTML = `
+                <h2>Ошибка: ${error.message}</h2>
+                <button class="button" onclick="location.href='registration.html'">Войти</button>
+            `;
+        }
+    });
+</script>
+</body>
+</html>

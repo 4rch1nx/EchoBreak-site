@@ -1,0 +1,431 @@
+/* General Reset */
+@font-face {
+    font-family: 'Hweebaqs';
+    src: url('fonts/Hweebaqs.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+/* Body Styling */
+body {
+    font-family: 'Hweebaqs', sans-serif; /* Main font */
+    font-size: 14px;
+    margin: 0;
+    padding: 0;
+    background-color: #303030;
+    color: #fff;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh; /* Ensure body takes at least full viewport height */
+}
+
+/* Header */
+header {
+    background-color: #303030;
+    padding: 10px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 12px;
+}
+
+header img {
+    width: 40px; /* Logo width */
+    height: 40px;
+    /* margin-right: 10px; */
+}
+
+header space {
+    width: 20px;
+}
+
+/* Active Logo */
+header #logo-link.active {
+    border-bottom: 2px solid #d25354; /* Highlight the logo when active */
+}
+
+left-label {
+    display: block;
+    text-align: left;
+    height: 20px;
+}
+
+nav ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+}
+
+nav ul li {
+    margin-right: 20px;
+}
+
+nav ul li a {
+    font-family: 'Hweebaqs', sans-serif;
+    color: #fff;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+nav ul li a.active {
+    color: #d25354;
+    border-bottom: 2px solid #d25354;
+}
+
+/* Separator Line */
+.separator {
+    width: 100%; /* Full width */
+    height: 1px; /* Thin line */
+    background-color: #fff; /* White color */
+    margin: 0 auto; /* Centered horizontally */
+}
+
+/* Main Content */
+main {
+    padding: 20px;
+    flex: 1; /* Allow main content to take up remaining space */
+    text-align: center; /* Center the main content */
+}
+
+h1 {
+    font-family: 'Hweebaqs', sans-serif; /* Title font */
+    color: #d25354;
+    font-size: 36px;
+    margin-bottom: 20px;
+}
+
+h2 {
+    font-family: 'Hweebaqs', sans-serif; /* Title font */
+    color: #fff;
+    font-size: 24px;
+    margin-bottom: 10px;
+}
+
+p {
+    color: #ccc;
+    line-height: 1.6;
+}
+
+p span {
+    color: #d25354;
+}
+
+ol {
+    color: #ccc;
+    margin-bottom: 20px;
+}
+
+.button {
+    display: inline-block;
+    padding: 10px 20px;
+    background-color: #d25354;
+    color: #fff;
+    text-decoration: none;
+    border-radius: 5px;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+}
+
+.transparent-button {
+    display: inline-block;
+    padding: 10px 20px;
+    background-color: #3b3b3b;
+    color: #fff;
+    text-decoration: none;
+    border-radius: 5px;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+}
+
+.button:hover {
+    background-color: #b33434;
+}
+
+.transparent-button:hover {
+    background-color: #303030;
+}
+
+form {
+    margin-top: 20px;
+}
+
+form label {
+    display: block;
+    margin-bottom: 5px;
+    color: #fff;
+}
+
+form input,
+form textarea {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 15px;
+    background-color: #3b3b3b;
+    border: 2px solid #d25354;
+    border-radius: 5px;
+    color: #fff;
+}
+
+/* Footer */
+footer {
+    background-color: #111;
+    color: #fff;
+    text-align: center;
+    padding: 10px 0;
+    margin-top: auto; /* Push footer to the bottom */
+}
+
+footer span {
+    color: #d25354;
+}
+
+/* ===================================== */
+/* Avatar Placeholder */
+.avatar-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.avatar {
+    width: 128px;
+    height: 128px;
+    border: 2px solid #d25354;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 24px;
+    color: #d25354;
+}
+
+/* Buttons Alignment */
+.buttons-container {
+    display: flex;
+    gap: 10px;
+}
+
+
+/* Rounded Rectangles */
+.rounded-rectangle {
+    background-color: #3b3b3b;
+    border-radius: 10px;
+    padding: 10px;
+    margin-bottom: 10px;
+    color: #fff;
+    width: 220px;
+    border: 2px solid #d25354; /* Red border */
+}
+
+.rounded-rectangle label {
+    font-weight: bold;
+    display: block;
+    margin-bottom: 5px;
+}
+
+.rounded-rectangle p {
+    margin: 0;
+    text-align: left;
+}
+
+/* Fanfic Grid */
+.fanfic-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+    margin-top: 20px;
+}
+
+/* Responsive Design for Mobile */
+@media (max-width: 768px) {
+    .fanfic-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+
+    .fanfic-image {
+        height: auto; /* Adjust image height automatically */
+        width: 100%;
+    }
+}
+
+.fanfic-card {
+    background-color: #3b3b3b;
+    border-radius: 10px;
+    padding: 10px;
+    cursor: pointer;
+    transition: transform 0.3s ease;
+    height: auto;
+    display: flex; /* Enable Flexbox */
+    flex-direction: column; /* Stack children vertically */
+    justify-content: space-between; /* Push content to top and bottom */
+}
+
+.fanfic-card:hover {
+    transform: scale(1.05);
+}
+
+.fanfic-metadata {
+    color: #fff;
+    font-size: 10px;
+    margin-bottom: 10px; /* Add spacing between metadata and image */
+}
+
+.read-button {
+    display: block;
+    width: 100%;
+    padding: 5px;
+    background-color: #d25354;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    margin-top: auto; /* Push the button to the bottom */
+}
+
+.read-button:hover {
+    background-color: #b33434;
+}
+
+.fanfic-image {
+    width: 100%;
+    height: 100px; /* Adjust height for larger images */
+    object-fit: cover;
+    border-radius: 5px;
+    margin-bottom: 10px;
+}
+
+/* Modal Styles */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0, 0, 0, 0.7);
+}
+
+.modal-content {
+    background-color: #3b3b3b;
+    margin: 10% auto;
+    padding: 20px;
+    border-radius: 10px;
+    width: 80%;
+    max-width: 600px;
+    position: relative;
+}
+
+.modal-content.full-screen {
+    width: 100%;
+    max-width: 100%;
+    height: 100%;
+    padding: 20px;
+    overflow-y: auto; /* Enable vertical scrolling for long content */
+}
+
+.close-modal {
+    color: #d25354;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.close-modal:hover,
+.close-modal:focus {
+    color: #fff;
+    text-decoration: none;
+    outline: none;
+}
+
+/* Modal Content Styling */
+#fanficTitle {
+    color: #d25354;
+    font-size: 24px;
+    margin-bottom: 10px;
+}
+
+#fanficAuthorDate {
+    color: #fff;
+    font-size: 16px;
+    margin-bottom: 20px;
+}
+
+#fanficContent {
+    color: #fff;
+    font-size: 16px;
+    line-height: 1.6;
+    text-align: left;
+}
+
+#fanficContent h3 {
+    font-size: 20px;
+    font-weight: bold;
+    margin: 20px 0;
+}
+
+#fanficContent p {
+    margin: 8px 0;
+}
+
+/* Separator Line in Modal */
+.modal-separator {
+    width: 100%; /* Full width */
+    height: 1px; /* Thin line */
+    background-color: #fff; /* White color */
+    margin: 10px 0; /* Add spacing above and below the line */
+}
+
+/* Crypto Card Styles */
+.crypto-card {
+    background-color: #3b3b3b;
+    border-radius: 20px;
+    padding: 20px;
+    max-width: 500px;
+    margin: 0 auto;
+    border: 2px solid #d25354;
+    margin-bottom: 10px;
+}
+
+.crypto-card-body {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.balance {
+    text-align: left;
+}
+
+.amount {
+    font-size: 20px;
+    font-weight: bold;
+    color: #fff;
+    margin-top: 5px;
+}
+
+.amount-rub {
+    font-size: 16px;
+    font-weight: bold;
+    color: #ccc;
+    margin-top: 5px;
+}
+
+.currency-logo img {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background-color: #d25354;
+    padding: 0px;
+    box-sizing: border-box;
+}
