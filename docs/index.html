@@ -46,39 +46,28 @@
         <p>EchoBreak, 2025</p>
     </footer>
 
-    <div id="particle-burst"></div>
+    <div id="burst" style="position:fixed;top:50%;left:50%;width:1px;height:1px;z-index:9999;pointer-events:none;"></div>
 
     <script>
-        function createParticleBurst() {
-            const burst = document.getElementById('particle-burst');
-            const colors = ['#FF0000', '#FF7F00', '#FFFF00', '#00FF00', '#0000FF', '#4B0082', '#8F00FF'];
-    
+        function burstRainbow() {
+            const container = document.getElementById('burst');
             for (let i = 0; i < 100; i++) {
-                const particle = document.createElement('div');
-                particle.classList.add('particle');
+                const dot = document.createElement('div');
+                dot.className = 'dot';
+                dot.style.setProperty('--hue', Math.random());
     
-                // Random angle and distance
                 const angle = Math.random() * 2 * Math.PI;
-                const distance = 150 + Math.random() * 100;
+                const dist = 100 + Math.random() * 100;
+                dot.style.setProperty('--x', Math.cos(angle) * dist + 'px');
+                dot.style.setProperty('--y', Math.sin(angle) * dist + 'px');
     
-                // Calculate final position
-                const x = Math.cos(angle) * distance + 'px';
-                const y = Math.sin(angle) * distance + 'px';
+                container.appendChild(dot);
     
-                // Set color and position
-                particle.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
-                particle.style.setProperty('--x', x);
-                particle.style.setProperty('--y', y);
-    
-                burst.appendChild(particle);
-    
-                // Remove after animation
-                setTimeout(() => particle.remove(), 2000);
+                setTimeout(() => dot.remove(), 2000);
             }
         }
     
-        // Trigger on page load
-        window.addEventListener('load', createParticleBurst);
+        window.addEventListener('load', burstRainbow);
     </script>
     
 </body>
