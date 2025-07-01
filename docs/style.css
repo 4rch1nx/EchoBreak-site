@@ -546,8 +546,8 @@ footer span {
 
 .dot {
     position: absolute;
-    width: 6px;
-    height: 6px;
+    width: 10px;
+    height: 10px;
     border-radius: 50%;
     background: hsl(calc(var(--hue) * 360), 100%, 50%);
     animation: explode 3s ease-out forwards;
