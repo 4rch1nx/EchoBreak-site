@@ -49,25 +49,25 @@
     <div id="burst" style="position:fixed;top:50%;left:50%;width:1px;height:1px;z-index:9999;pointer-events:none;"></div>
 
     <script>
-        function burstRainbow() {
+        function createBurst() {
             const container = document.getElementById('burst');
-            for (let i = 0; i < 100; i++) {
+            for (let i = 0; i < 40; i++) {
                 const dot = document.createElement('div');
                 dot.className = 'dot';
                 dot.style.setProperty('--hue', Math.random());
     
                 const angle = Math.random() * 2 * Math.PI;
-                const dist = 100 + Math.random() * 100;
+                const dist = 200 + Math.random() * 150; // Larger burst radius
                 dot.style.setProperty('--x', Math.cos(angle) * dist + 'px');
                 dot.style.setProperty('--y', Math.sin(angle) * dist + 'px');
     
                 container.appendChild(dot);
     
-                setTimeout(() => dot.remove(), 2000);
+                setTimeout(() => dot.remove(), 3000); // Match animation duration
             }
         }
     
-        window.addEventListener('load', burstRainbow);
+        window.addEventListener('load', createBurst);
     </script>
     
 </body>
