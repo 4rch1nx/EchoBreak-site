@@ -60,8 +60,6 @@
         <p>EchoBreak, 2025</p>
     </footer>
 
-    <div id="burst" style="position:fixed;top:50%;left:50%;width:1px;height:1px;z-index:9999;pointer-events:none;"></div>
-
     <script>
         // JavaScript to fetch and display all Gists on page load
         document.addEventListener('DOMContentLoaded', async function() {
@@ -225,26 +223,6 @@
         document.querySelector('.close-modal').onclick = () => {
             document.getElementById('fanficModal').style.display = 'none';
         };
-
-        function createBurst() {
-            const container = document.getElementById('burst');
-            for (let i = 0; i < 100; i++) {
-                const dot = document.createElement('div');
-                dot.className = 'dot';
-                dot.style.setProperty('--hue', Math.random());
-    
-                const angle = Math.random() * 2 * Math.PI;
-                const dist = 200 + Math.random() * 200; // Larger burst radius
-                dot.style.setProperty('--x', Math.cos(angle) * dist + 'px');
-                dot.style.setProperty('--y', Math.sin(angle) * dist + 'px');
-    
-                container.appendChild(dot);
-    
-                setTimeout(() => dot.remove(), 3000); // Match animation duration
-            }
-        }
-    
-        window.addEventListener('load', createBurst);
     </script>
 </body>
 </html>
