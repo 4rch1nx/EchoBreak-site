@@ -227,69 +227,17 @@
                 input.click(); // Trigger the file input dialog
             });
 
-            // Handle Activation Key Section
+            // Display Activation Key (no manual input allowed)
             const activationKeyField = document.getElementById('activationKeyField');
             let userToken = userData.userToken || '';
-            // Ensure userToken is treated as an empty string if undefined or null
-            userToken = userToken.trim() === '' ? '' : userToken;
+            userToken = userToken.trim();
+            
             if (userToken === '') {
-                // Display text field for entering activation key
-                activationKeyField.innerHTML = `
-                    <input type="text" id="userTokenID" name="userTokenID" placeholder="Введите ключ активации" required>
-                    <button class="button" id="saveActivationKeyButton">Сохранить ключ</button>
-                `;
-                // Save Activation Key Button
-                document.getElementById('saveActivationKeyButton').addEventListener('click', async function () {
-                    const activationKeyInput = document.getElementById('userTokenID'); // Use the updated ID
-                    const activationKey = activationKeyInput.value.trim();
-                    if (!activationKey) {
-                        alert('Введите ключ активации.');
-                        return;
-                    }
-                    // Update the user's Gist file with the activation key
-                    const updatedUserData = { ...userData, userToken: activationKey };
-                    const updatedFileContent = JSON.stringify(updatedUserData);
-                    try {
-                        const updateResponse = await fetch(userGist.url, {
-                            method: 'PATCH',
-                            headers: {
-                                'Authorization': `token ${githubToken}`,
-                                'Content-Type': 'application/json'
-                            },
-                            body: JSON.stringify({
-                                files: {
-                                    [fileName]: {
-                                        content: updatedFileContent
-                                    }
-                                }
-                            })
-                        });
-                        if (!updateResponse.ok) {
-                            throw new Error('Ошибка при обновлении данных.');
-                        }
-                        // Save the activation key to localStorage
-                        localStorage.setItem('userToken', activationKey);
-                        // Update the UI
-                        activationKeyField.innerHTML = `
-                            <p>${activationKey}</p>
-                        `;
-                    } catch (error) {
-                        alert(`Ошибка: ${error.message}`);
-                    }
-                });
+                activationKeyField.innerHTML = `<p style="color: gray;">Ключ активации отсутствует</p>`;
+            } else if (userToken === 'rejected') {
+                activationKeyField.innerHTML = `<p style="color: #d25354;">${userToken}</p>`;
             } else {
-                // Display the activation key as a paragraph
-                let activationKeyHTML = '';
-                if (userToken === 'rejected') {
-                    activationKeyHTML = `
-                        <p style="color: #d25354;">${userToken}</p>
-                    `;
-                } else {
-                    activationKeyHTML = `
-                        <p>${userToken}</p>
-                    `;
-                }
-                activationKeyField.innerHTML = activationKeyHTML;
+                activationKeyField.innerHTML = `<p>${userToken}</p>`;
             }
             // Add event listener for logout button
             const logoutButton = document.getElementById('logoutButton');
