@@ -87,13 +87,13 @@
       for (const school in data.schools) {
         const schoolDiv = document.createElement('div');
         schoolDiv.className = 'school';
-        schoolDiv.innerHTML = `<h2>مدرسة ${school}</h2>`;
+        schoolDiv.innerHTML = `<h2>${school}</h2>`;
         
         const rooms = data.schools[school];
         for (const room in rooms) {
           const roomDiv = document.createElement('div');
           roomDiv.className = 'room';
-          roomDiv.innerHTML = `<h3>فصل ${room}</h3>`;
+          roomDiv.innerHTML = `<h3>${room}</h3>`;
           
           const devices = rooms[room];
           for (const type in devices) {
