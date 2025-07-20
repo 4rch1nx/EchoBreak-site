@@ -563,3 +563,80 @@ footer span {
         opacity: 0;
     }
 }
+
+/* === Device Dashboard Styles === */
+
+.dashboard-container {
+    padding: 20px;
+}
+
+.device {
+    display: inline-block;
+    width: 100px;
+    height: 100px;
+    margin: 10px;
+    background-color: red;
+    color: white;
+    text-align: center;
+    line-height: 20px;
+    border-radius: 10px;
+    cursor: pointer;
+    overflow: hidden;
+    transition: height 0.3s ease;
+    position: relative;
+    vertical-align: top;
+}
+
+.device.online {
+    background-color: green;
+}
+
+.device .device-name {
+    font-size: 12px;
+    font-weight: bold;
+    margin-top: 10px;
+}
+
+.device .details {
+    display: none;
+    font-size: 10px;
+    padding: 5px;
+    text-align: left;
+    line-height: 1.2;
+}
+
+.device.expanded .details {
+    display: block;
+}
+
+.device.expanded {
+    height: 180px !important;
+}
+/*
+.school, .room, .device-container {
+    margin-left: 20px;
+}
+*/
+
+h2, h3, h4 {
+    margin-top: 30px;
+    color: #d25354;
+}
+
+/* Optional: Add some contrast for hierarchy */
+
+.school {
+    border-left: 2px solid #d25354;
+    padding-left: 10px;
+    margin-bottom: 20px;
+}
+.room {
+    border-left: 2px solid #ccc;
+    padding-left: 10px;
+    margin-bottom: 15px;
+}
+.device-container {
+    border-left: 2px solid #888;
+    padding-left: 10px;
+    margin-bottom: 10px;
+}
