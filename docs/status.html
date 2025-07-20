@@ -33,7 +33,7 @@
     <main>
         <h1>EchoBreak</h1>
         <h2>Device Status Dashboard</h2>
-        <div id="dashboard"></div>
+        <div id="dashboard">Загрузка устройств...</div>
     </main>
 
     <!-- Footer -->
@@ -47,29 +47,40 @@
     const gist_id = "f115340ff9260344597ae98580b36e15";
 
     async function fetchGist() {
-      const url = `https://api.github.com/gists/ ${gist_id}`;
-      
-      const response = await fetch(url, {
-        method: 'GET',
-        headers: {
-          'Authorization': `token ${token}`,
-          'Accept': 'application/vnd.github.v3+json'
+        try {
+        const url = `https://api.github.com/gists/ ${gist_id}`;
+        const response = await fetch(url, {
+          method: 'GET',
+          headers: {
+            'Authorization': `token ${token}`,
+            'Accept': 'application/vnd.github.v3+json'
+          }
+        });
+        
+        if (!response.ok) {
+          throw new Error(`GitHub API error: ${response.status} ${response.statusText}`);
         }
-      });
-
-      const gist = await response.json();
-      const file = gist.files[filename];
-      if (!file) {
-        console.error("File not found in Gist");
-        return;
-      }
-
-      const raw_url = file.raw_url;
-      const jsonRes = await fetch(raw_url);
-      const data = await jsonRes.json();
-      renderDashboard(data);
+        
+        const gist = await response.json();
+        const file = gist.files[filename];
+        if (!file) {
+          throw new Error(`File "${filename}" not found in Gist`);
+        }
+        
+        const raw_url = file.raw_url;
+        const jsonRes = await fetch(raw_url);
+        if (!jsonRes.ok) {
+          throw new Error(`Failed to fetch raw JSON: ${jsonRes.status}`);
+        }
+        
+        const data = await jsonRes.json();
+        renderDashboard(data);
+        
+        } catch (error) {
+        console.error("Error fetching Gist or JSON:", error);
+        document.getElementById('dashboard').innerText = "Error loading data. Check console for details.";
+        }
     }
-
     function renderDashboard(data) {
       const dashboard = document.getElementById('dashboard');
 
