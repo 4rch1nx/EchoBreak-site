@@ -54,15 +54,19 @@
         <canvas id="xmrRubChart"></canvas>
     </div>
 
-    <div id="xmr-stats">
+    <div id="trading-bot">
         <div class="crypto-card">
             <div class="crypto-card-body">
                 <div class="balance">
-                    <span>Trading bot:</span>
-                    <p>In development...</p>
+                    <span>Trading Bot (NVDA):</span>
+                    <p id="bot-signal">Loading...</p>
+                    <div id="bot-info">
+                        <small>Price: <span id="current-price">—</span> ₽</small><br>
+                        <small>Strategy: SMA Crossover (10 &amp; 20 days)</small>
+                    </div>
                 </div>
                 <div class="currency-logo">
-                    <img src="images/placeholder.png" alt="placeholder">
+                    <img src="images/nvidia-logo.png" alt="NVDA Logo">
                 </div>
             </div>
         </div>
@@ -210,6 +214,76 @@
             }
         });
     }
+
+    // === SIMPLE TRADING BOT FOR NVDA (in RUB) ===
+    function runTradingBot() {
+        const botSignal = document.getElementById('bot-signal');
+        const currentPriceElem = document.getElementById('current-price');
+    
+        // API 1: Get NVDA stock price (IEX Cloud or Yahoo via CORS proxy)
+        // Using Financial Modeling Prep (free tier allows 200 requests/day)
+        const SYMBOL = 'NVDA';
+        const FMP_API_KEY = '2bxb0il75hhAFMqNlppJ3yevZo0J7xMI'; // Get free key at https://financialmodelingprep.com/
+        const STOCK_URL = `https://financialmodelingprep.com/api/v3/historical-price-full/${SYMBOL}?timeseries=20&apikey=${FMP_API_KEY}`;
+    
+        // Alternative: Use Alpha Vantage (slower updates, but free)
+        // const ALPHA_VANTAGE_KEY = 'YOUR_AV_KEY';
+        // const STOCK_URL = `https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol=${SYMBOL}&outputsize=compact&apikey=${ALPHA_VANTAGE_KEY}`;
+    
+        // API 2: Get USD to RUB rate
+        const EXCHANGE_URL = 'https://api.exchangerate-api.com/v4/latest/USD';
+    
+        Promise.all([
+            fetch(STOCK_URL).then(res => res.json()),
+            fetch(EXCHANGE_URL).then(res => res.json())
+        ])
+        .then(([stockData, exchangeData]) => {
+            const usdToRub = exchangeData.rates.RUB;
+    
+            // Extract closing prices (latest 20 days)
+            const prices = stockData.historical
+                .slice(0, 20) // Last 20 days
+                .map(day => parseFloat(day.close) * usdToRub) // Convert to RUB
+                .reverse(); // Oldest first
+    
+            if (prices.length < 20) {
+                botSignal.textContent = "Not enough data";
+                return;
+            }
+    
+            // Calculate SMA10 and SMA20
+            const sma10 = prices.slice(0, 10).reduce((a, b) => a + b, 0) / 10;
+            const sma20 = prices.reduce((a, b) => a + b, 0) / 20;
+            const currentPrice = prices[0]; // Most recent price
+    
+            currentPriceElem.textContent = currentPrice.toFixed(2);
+    
+            // Golden Cross / Death Cross logic
+            let signal = '';
+            if (sma10 > sma20) {
+                signal = '🟢 BUY (SMA10 > SMA20)';
+            } else {
+                signal = '🔴 SELL (SMA10 < SMA20)';
+            }
+    
+            botSignal.innerHTML = `<strong>${signal}</strong>`;
+
+            // Simulate starting with 1000 RUB
+            const initialInvestment = 1000;
+            let shares = initialInvestment / prices[19]; // Buy at oldest price (20 days ago)
+            let currentValue = shares * currentPrice;
+            let change = ((currentValue - initialInvestment) / initialInvestment * 100).toFixed(2);
+            
+            document.getElementById('bot-info').innerHTML += `<br><small>Simulated return (20d): ${change > 0 ? '🟢' : '🔴'} ${change}%</small>`;
+        })
+        .catch(err => {
+            console.error("Bot error:", err);
+            botSignal.textContent = "Error fetching data";
+        });
+    }
+    
+    // Run the bot after DOM loads
+    runTradingBot();
 </script>
 
 </body>
