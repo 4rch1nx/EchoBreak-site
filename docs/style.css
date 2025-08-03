@@ -640,3 +640,10 @@ h2, h3, h4 {
     padding-left: 10px;
     margin-bottom: 10px;
 }
+
+.tradingview-widget-container {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  margin: 20px 0; /* Optional: add spacing */
+}
