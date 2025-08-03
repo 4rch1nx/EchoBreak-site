@@ -58,7 +58,7 @@
         <div class="crypto-card">
             <div class="crypto-card-body">
                 <div class="balance">
-                    <span>Trading Bot (NVDA):</span>
+                    <span>Trading Bot (Alpha ver.):</span>
                     <p id="bot-signal">Loading...</p>
                     <div id="bot-info">
                         <small>Price: <span id="current-price">—</span> ₽</small><br>
@@ -215,22 +215,14 @@
         });
     }
 
-    // === SIMPLE TRADING BOT FOR NVDA (in RUB) ===
     function runTradingBot() {
         const botSignal = document.getElementById('bot-signal');
         const currentPriceElem = document.getElementById('current-price');
+        const botInfo = document.getElementById('bot-info');
     
-        // API 1: Get NVDA stock price (IEX Cloud or Yahoo via CORS proxy)
-        // Using Financial Modeling Prep (free tier allows 200 requests/day)
         const SYMBOL = 'NVDA';
-        const FMP_API_KEY = '2bxb0il75hhAFMqNlppJ3yevZo0J7xMI'; // Get free key at https://financialmodelingprep.com/
-        const STOCK_URL = `https://financialmodelingprep.com/api/v3/historical-price-full/${SYMBOL}?timeseries=20&apikey=${FMP_API_KEY}`;
-    
-        // Alternative: Use Alpha Vantage (slower updates, but free)
-        // const ALPHA_VANTAGE_KEY = 'YOUR_AV_KEY';
-        // const STOCK_URL = `https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol=${SYMBOL}&outputsize=compact&apikey=${ALPHA_VANTAGE_KEY}`;
-    
-        // API 2: Get USD to RUB rate
+        const FMP_API_KEY = 'YOUR_FMP_API_KEY'; // Get at https://financialmodelingprep.com
+        const STOCK_URL = `https://financialmodelingprep.com/api/v3/historical-price-full/${SYMBOL}?timeseries=30&apikey=${FMP_API_KEY}`;
         const EXCHANGE_URL = 'https://api.exchangerate-api.com/v4/latest/USD';
     
         Promise.all([
@@ -240,50 +232,132 @@
         .then(([stockData, exchangeData]) => {
             const usdToRub = exchangeData.rates.RUB;
     
-            // Extract closing prices (latest 20 days)
-            const prices = stockData.historical
-                .slice(0, 20) // Last 20 days
-                .map(day => parseFloat(day.close) * usdToRub) // Convert to RUB
-                .reverse(); // Oldest first
+            // Extract last 30 days of closing prices (for RSI & EMA)
+            const closes = stockData.historical
+                .slice(0, 30)
+                .map(day => parseFloat(day.close) * usdToRub)
+                .reverse(); // [0] = oldest, [n] = newest
     
-            if (prices.length < 20) {
+            if (closes.length < 14) {
                 botSignal.textContent = "Not enough data";
                 return;
             }
     
-            // Calculate SMA10 and SMA20
-            const sma10 = prices.slice(0, 10).reduce((a, b) => a + b, 0) / 10;
-            const sma20 = prices.reduce((a, b) => a + b, 0) / 20;
-            const currentPrice = prices[0]; // Most recent price
+            // === 1. Calculate EMA12 and EMA26 (for MACD-style crossover) ===
+            const ema12 = calculateEMA(closes, 12);
+            const ema26 = calculateEMA(closes, 26);
+            const price = closes[closes.length - 1];
+            currentPriceElem.textContent = price.toFixed(2);
     
-            currentPriceElem.textContent = currentPrice.toFixed(2);
+            // === 2. Calculate RSI(14) ===
+            const rsi = calculateRSI(closes, 14);
+            const rsiValue = rsi[rsi.length - 1];
     
-            // Golden Cross / Death Cross logic
+            // === 3. Generate Signal ===
             let signal = '';
-            if (sma10 > sma20) {
-                signal = '🟢 BUY (SMA10 > SMA20)';
+            let reason = '';
+    
+            const emaBullish = ema12[ema12.length - 1] > ema26[ema26.length - 1];
+            const emaPrevBullish = ema12[ema12.length - 2] > ema26[ema26.length - 2];
+            const emaCrossUp = !emaPrevBullish && emaBullish;
+            const emaCrossDown = emaPrevBullish && !emaBullish;
+    
+            if (emaCrossUp && rsiValue < 70) {
+                signal = '🟢 BUY';
+                reason = 'EMA12/26 Cross Up + RSI < 70';
+            } else if (emaCrossDown && rsiValue > 30) {
+                signal = '🔴 SELL';
+                reason = 'EMA12/26 Cross Down + RSI > 30';
+            } else if (emaBullish && rsiValue < 60) {
+                signal = '🟡 HOLD (Uptrend)';
+                reason = 'EMA Bullish + RSI Not Overbought';
+            } else if (!emaBullish && rsiValue > 40) {
+                signal = '🟡 WATCH (Downtrend)';
+                reason = 'EMA Bearish + RSI Not Oversold';
             } else {
-                signal = '🔴 SELL (SMA10 < SMA20)';
+                signal = '🔵 NEUTRAL';
+                reason = 'Waiting for confirmation';
             }
     
             botSignal.innerHTML = `<strong>${signal}</strong>`;
-
-            // Simulate starting with 1000 RUB
+            botInfo.innerHTML = `
+                <small>Price: ${price.toFixed(2)} ₽</small><br>
+                <small>RSI(14): ${rsiValue.toFixed(2)}</small><br>
+                <small>Trend: ${emaBullish ? 'Bullish' : 'Bearish'}</small><br>
+                <small><em>${reason}</em></small>
+            `;
+    
+            // === 4. Backtest: Simulate 1000 RUB invested 20 days ago ===
             const initialInvestment = 1000;
-            let shares = initialInvestment / prices[19]; // Buy at oldest price (20 days ago)
-            let currentValue = shares * currentPrice;
-            let change = ((currentValue - initialInvestment) / initialInvestment * 100).toFixed(2);
-            
-            document.getElementById('bot-info').innerHTML += `<br><small>Simulated return (20d): ${change > 0 ? '🟢' : '🔴'} ${change}%</small>`;
+            const daysAgo = Math.min(20, closes.length - 1);
+            const buyPrice = closes[closes.length - 1 - daysAgo]; // Price 20 days ago
+            const shares = initialInvestment / buyPrice;
+            const currentValue = shares * price;
+            const change = ((currentValue - initialInvestment) / initialInvestment * 100).toFixed(2);
+            const trendEmoji = change > 0 ? '🟢' : '🔴';
+            const absChange = Math.abs(change);
+    
+            botInfo.innerHTML += `<br><small>Simulated return (${daysAgo}d): ${trendEmoji} ${absChange}%</small>`;
+    
         })
         .catch(err => {
             console.error("Bot error:", err);
             botSignal.textContent = "Error fetching data";
+            botInfo.innerHTML = "<small>Could not load market data.</small>";
         });
     }
     
     // Run the bot after DOM loads
     runTradingBot();
+
+    // === EMA Calculator ===
+    function calculateEMA(prices, period) {
+        const k = 2 / (period + 1);
+        const ema = [];
+        let sum = 0;
+    
+        // First EMA = SMA of first `period` values
+        for (let i = 0; i < period; i++) {
+            sum += prices[i];
+        }
+        let currentEMA = sum / period;
+        ema.push(currentEMA);
+    
+        // Rest: EMA = Priceₜ × k + EMAₜ₋₁ × (1 - k)
+        for (let i = period; i < prices.length; i++) {
+            currentEMA = prices[i] * k + currentEMA * (1 - k);
+            ema.push(currentEMA);
+        }
+    
+        return ema;
+    }
+    
+    // === RSI Calculator (14-period) ===
+    function calculateRSI(prices, period) {
+        const gains = [];
+        const losses = [];
+    
+        for (let i = 1; i < prices.length; i++) {
+            const diff = prices[i] - prices[i - 1];
+            gains.push(diff > 0 ? diff : 0);
+            losses.push(diff < 0 ? Math.abs(diff) : 0);
+        }
+    
+        const rsi = [];
+        for (let i = period; i < gains.length; i++) {
+            const avgGain = gains.slice(i - period, i).reduce((a, b) => a + b, 0) / period;
+            const avgLoss = losses.slice(i - period, i).reduce((a, b) => a + b, 0) / period;
+    
+            if (avgLoss === 0) {
+                rsi.push(100); // Avoid divide by zero
+            } else {
+                const rs = avgGain / avgLoss;
+                rsi.push(100 - (100 / (1 + rs)));
+            }
+        }
+    
+        return rsi;
+    }
 </script>
 
 </body>
