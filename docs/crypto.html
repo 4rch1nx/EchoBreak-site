@@ -72,8 +72,26 @@
         </div>
     </div>
 
-    <div class="chart-container" style="width: 90%; max-width: 600px; margin: 40px auto;">
-    <canvas id="nvidiaChart"></canvas>
+    <!-- TradingView Widget BEGIN -->
+    <div class="tradingview-widget-container">
+      <div class="tradingview-widget-container__widget"></div>
+      <div class="tradingview-widget-copyright"><a href="https://www.tradingview.com/symbols/NASDAQ-NVDA/technicals/?exchange=NASDAQ" rel="noopener nofollow" target="_blank"><span class="blue-text">Technical analysis for NVDA by TradingView</span></a></div>
+      <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-technical-analysis.js" async>
+      {
+      "colorTheme": "dark",
+      "displayMode": "single",
+      "isTransparent": true,
+      "locale": "en",
+      "interval": "15m",
+      "disableInterval": false,
+      "width": 425,
+      "height": 450,
+      "symbol": "NASDAQ:NVDA",
+      "showIntervalTabs": true
+    }
+      </script>
+    </div>
+    <!-- TradingView Widget END -->
 </div>
 </main>
 
@@ -388,90 +406,6 @@
     
         return rsi;
     }
-
-    // === DRAW NVDA TO USDT CHART ===
-    function drawNvidiaChart() {
-        const ctx = document.getElementById('nvidiaChart').getContext('2d');
-        const statusText = document.getElementById('chart-status');
-    
-        // Use CoinGecko to get NVDA-like data (⚠️ NVDA is stock, not crypto)
-        // We'll use Binance's API via proxy or simulate with synthetic data
-        // Since there's no real "NVDA/USDT" on public APIs easily, we use Yahoo via Alpha Vantage
-    
-        const ALPHA_VANTAGE_KEY = '0BXE58CMSD4OMHMW'; // Get at https://www.alphavantage.co
-        const STOCK_URL = `https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol=NVDA&outputsize=compact&apikey=${ALPHA_VANTAGE_KEY}`;
-    
-        fetch(STOCK_URL)
-            .then(res => res.json())
-            .then(data => {
-                if (!data['Time Series (Daily)']) {
-                    throw new Error('Invalid data from API');
-                }
-    
-                const series = data['Time Series (Daily)'];
-                const prices = [];
-                const labels = [];
-    
-                // Get last 30 days
-                const sortedDates = Object.keys(series).sort().reverse().slice(0, 30);
-    
-                sortedDates.forEach(date => {
-                    const close = parseFloat(series[date]['4. close']);
-                    prices.push(close);
-                    labels.push(new Date(date).toISOString().split('T')[0]);
-                });
-    
-                prices.reverse();
-                labels.reverse();
-    
-                // Determine trend color
-                const first = prices[0];
-                const last = prices[prices.length - 1];
-                const borderColor = last >= first ? '#00ff88' : '#ff3366';
-    
-                // Remove status
-                statusText.style.display = 'none';
-    
-                new Chart(ctx, {
-                    type: 'line',
-                    data: {
-                        labels: labels,
-                        datasets: [{
-                            label: 'NVDA / USD (Last 30 Days)',
-                            data: prices,
-                            borderColor: borderColor,
-                            backgroundColor: last >= first ? 'rgba(0, 255, 136, 0.1)' : 'rgba(255, 51, 102, 0.1)',
-                            fill: true,
-                            tension: 0.3,
-                            pointRadius: 2,
-                            borderWidth: 2
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        scales: {
-                            y: {
-                                ticks: { color: '#fff' },
-                                beginAtZero: false
-                            },
-                            x: {
-                                ticks: { color: '#fff', maxTicksLimit: 8 }
-                            }
-                        },
-                        plugins: {
-                            legend: { labels: { color: '#fff' } }
-                        }
-                    }
-                });
-            })
-            .catch(err => {
-                console.error("Chart error:", err);
-                statusText.textContent = "Failed to load NVDA chart";
-            });
-    }
-    
-    // Run it
-    drawNvidiaChart();
 </script>
 
 </body>
