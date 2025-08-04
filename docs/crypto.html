@@ -6,12 +6,8 @@
     <title>EchoBreak - Крипта</title>
     <link rel="stylesheet" href="style.css" />
     <link rel="icon" type="image/png" href="images/favicon.png" />
-
-    <!-- Chart.js CDN -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script> 
 </head>
 <body>
-
 <header>
     <a href="index.html" id="logo-link">
         <img src="images/logo.png" alt="EchoBreak Logo" class="logo">
@@ -26,14 +22,10 @@
         </ul>
     </nav>
 </header>
-
 <div class="separator"></div>
-
 <main>
-    <!-- <h1>EchoBreak</h1> -->
     <h1>Crypto</h1>
     <h2>For educational purposes only!</h2>
-
     <div id="xmr-stats">
         <div class="crypto-card">
             <div class="crypto-card-body">
@@ -48,13 +40,6 @@
             </div>
         </div>
     </div>
-
-    <!-- Chart Container -->
-    <!--
-    <div class="chart-container" style="width: 90%; max-width: 600px; margin: 40px auto;">
-        <canvas id="xmrRubChart"></canvas>
-    </div>
-    -->
 
     <!-- TradingView Widget BEGIN -->
     <div class="tradingview-widget-container" style="margin: auto;">
@@ -115,7 +100,7 @@
       </script>
     </div>
     <!-- TradingView Widget END -->
-    
+
     <div id="trading-bot">
         <div class="crypto-card">
             <div class="crypto-card-body">
@@ -154,9 +139,8 @@
       </script>
     </div>
     <!-- TradingView Widget END -->
-</div>
-</main>
 
+</main>
 <footer>
     <p>EchoBreak, 2025</p>
 </footer>
@@ -165,19 +149,18 @@
     document.addEventListener('DOMContentLoaded', () => {
         const xmrAmount = document.getElementById('xmr-amount');
         const rubAmount = document.getElementById('rub-amount');
-
         const WALLET_ADDRESS = '42u3Aeoqq53Y8bKGT7RdawhtcS9AqYuKEDwwYL4BiS5s34964uaJU2zWB7miadNEBWCjcMXtMjcsa6boEZmpaeTV4ESEqpU';
 
         // Fetch wallet stats
-        fetch(`https://api.moneroocean.stream/miner/${WALLET_ADDRESS}/stats`) 
+        fetch(`https://api.moneroocean.stream/miner/${WALLET_ADDRESS}/stats`)
             .then(response => {
                 if (!response.ok) throw new Error('Wallet fetch error');
                 return response.json();
             })
             .then(data => {
-                const totalDue = parseFloat(data.amtPaid / 1000000000000 || 0).toFixed(6);
+                const totalDue = parseFloat(data.amtPaid / 1e12 || 0).toFixed(6);
 
-                // Fetch current price
+                // Fetch current XMR to RUB price
                 return fetch('https://api.coingecko.com/api/v3/simple/price?ids=monero&vs_currencies=rub')
                     .then(res => {
                         if (!res.ok) throw new Error('Price fetch error');
@@ -188,127 +171,25 @@
                         const rubValue = (parseFloat(totalDue) * xmrPriceRub).toFixed(2);
                         xmrAmount.textContent = `${totalDue} XMR`;
                         rubAmount.textContent = `${rubValue} ₽`;
-
-                        // Now fetch historical data for the chart
-                        return fetch('https://api.coingecko.com/api/v3/coins/monero/market_chart?vs_currency=rub&days=30')
-                            .then(res => {
-                                if (!res.ok) throw new Error('Historical fetch error');
-                                return res.json();
-                            });
-                    })
-                    .then(chartData => {
-                        const prices = chartData.prices.map(p => p[1]); // Extract price values
-                        const timestamps = chartData.prices.map(p => p[0]); // Extract timestamps
-
-                        // Sample data to reduce the number of points
-                        const sampledPrices = [];
-                        const sampledTimestamps = [];
-                        const step = Math.ceil(timestamps.length / 30); // Show approximately 30 points
-
-                        for (let i = 0; i < timestamps.length; i += step) {
-                            sampledPrices.push(prices[i]);
-                            sampledTimestamps.push(timestamps[i]);
-                        }
-
-                        // Convert timestamps to readable dates
-                        const labels = sampledTimestamps.map(timestamp => {
-                            const date = new Date(timestamp);
-                            return date.toISOString().split('T')[0]; // Format as YYYY-MM-DD
-                        });
-
-                        drawChart(labels, sampledPrices);
-                    })
-                    .catch(chartError => {
-                        console.warn("Failed to load real chart data:", chartError.message);
-                        drawFallbackChart();
                     });
             })
             .catch(error => {
                 console.error('Error fetching data:', error);
                 xmrAmount.textContent = '—';
                 rubAmount.textContent = '—';
-                drawFallbackChart();
             });
     });
 
-    function drawChart(labels, data) {
-        const ctx = document.getElementById('xmrRubChart').getContext('2d');
-        renderChart(labels, data);
-    }
-
-    function drawFallbackChart() {
-        const days = Array.from({ length: 30 }, (_, i) => `Day ${i + 1}`);
-        const xmrToRubData = [
-            2800, 2850, 2830, 2780, 2810, 2890, 2900, 2950, 3000, 3020,
-            3010, 3030, 3050, 3070, 3100, 3120, 3110, 3130, 3150, 3170,
-            3190, 3210, 3200, 3220, 3250, 3270, 3260, 3280, 3300, 3320
-        ];
-        renderChart(days, xmrToRubData);
-    }
-
-    function renderChart(labels, data) {
-        const ctx = document.getElementById('xmrRubChart').getContext('2d');
-
-        // Determine line color based on trend
-        const firstPrice = data[0];
-        const lastPrice = data[data.length - 1];
-        const borderColor = lastPrice > firstPrice ? '#00ff00' : '#ff0000'; // Green for up, Red for down 
-
-        new Chart(ctx, {
-            type: 'line',
-            data: {
-                labels: labels,
-                datasets: [{
-                    label: 'XMR to RUB (Last 30 Days)',
-                    data: data,
-                    borderColor: borderColor,
-                    backgroundColor: 'rgba(210, 83, 84, 0.1)',
-                    tension: 0.3,
-                    fill: true,
-                    pointRadius: 2,
-                    borderWidth: 2
-                }]
-            },
-            options: {
-                responsive: true,
-                scales: {
-                    y: {
-                        beginAtZero: false,
-                        ticks: {
-                            color: '#fff'
-                        }
-                    },
-                    x: {
-                        ticks: {
-                            color: '#fff',
-                            callback: function (value, index, values) {
-                                // Show only every 5th label to avoid overcrowding
-                                return index % 3 === 0 ? value : '';
-                            }
-                        }
-                    }
-                },
-                plugins: {
-                    legend: {
-                        labels: {
-                            color: '#fff'
-                        }
-                    }
-                }
-            }
-        });
-    }
-
+    // === TRADING BOT LOGIC ===
     function runTradingBot() {
         const botSignal = document.getElementById('bot-signal');
         const currentPriceElem = document.getElementById('current-price');
         const botInfo = document.getElementById('bot-info');
-    
         const SYMBOL = 'NVDA';
         const FMP_API_KEY = '2bxb0il75hhAFMqNlppJ3yevZo0J7xMI';
         const STOCK_URL = `https://financialmodelingprep.com/api/v3/historical-price-full/${SYMBOL}?timeseries=30&apikey=${FMP_API_KEY}`;
         const EXCHANGE_URL = 'https://api.exchangerate-api.com/v4/latest/USD';
-    
+
         Promise.all([
             fetch(STOCK_URL).then(r => r.json()),
             fetch(EXCHANGE_URL).then(r => r.json())
@@ -316,59 +197,49 @@
         .then(([stockData, exchangeData]) => {
             const usdToRub = exchangeData.rates.RUB;
             const hist = stockData.historical.slice(0, 30).reverse(); // Oldest → Newest
-    
             if (hist.length < 14) return updateError("Not enough data");
-    
-            // Extract values
+
             const closes = hist.map(h => parseFloat(h.close) * usdToRub);
-            const opens = hist.map(h => parseFloat(h.open) * usdToRub);
-            const highs = hist.map(h => parseFloat(h.high) * usdToRub);
-            const lows = hist.map(h => parseFloat(h.low) * usdToRub);
-            const volumes = hist.map(h => h.volume);
             const price = closes[closes.length - 1];
             currentPriceElem.textContent = price.toFixed(2);
-    
+
             // === INDICATORS ===
-    
-            // 1. EMA12 & EMA26
             const ema12 = calculateEMA(closes, 12);
             const ema26 = calculateEMA(closes, 26);
             const emaBull = ema12[ema12.length - 1] > ema26[ema26.length - 1];
             const emaPrevBull = ema12[ema12.length - 2] > ema26[ema26.length - 2];
             const emaCrossUp = !emaPrevBull && emaBull;
             const emaCrossDown = emaPrevBull && !emaBull;
-    
-            // 2. RSI(14)
+
             const rsi = calculateRSI(closes, 14);
             const rsiNow = rsi[rsi.length - 1];
-    
-            // 3. Volume Spike (avg of last 5 vs previous 10)
-            const recentVol = volumes.slice(-5).reduce((a, b) => a + b, 0) / 5;
-            const pastVol = volumes.slice(-15, -5).reduce((a, b) => a + b, 0) / 10;
-            const volumeSurge = recentVol > pastVol * 1.3; // 30% higher
-    
-            // 4. ATR(14) - Volatility
+
+            const recentVol = volumesSlice(closes, 5).reduce((a, b) => a + b.volume, 0) / 5;
+            const pastVol = volumesSlice(closes, 10, 5).reduce((a, b) => a + b.volume, 0) / 10;
+            const volumeSurge = recentVol > pastVol * 1.3;
+
             let trSum = 0;
+            const volumes = hist.map(h => h.volume);
             for (let i = 1; i < 14; i++) {
                 const tr = Math.max(
-                    highs[i] - lows[i],
-                    Math.abs(highs[i] - closes[i - 1]),
-                    Math.abs(lows[i] - closes[i - 1])
+                    hist[i].high * usdToRub - hist[i].low * usdToRub,
+                    Math.abs(hist[i].high * usdToRub - closes[i - 1]),
+                    Math.abs(hist[i].low * usdToRub - closes[i - 1])
                 );
                 trSum += tr;
             }
             const atr = trSum / 14;
-            const volatility = (atr / price) * 100; // % of price
-    
+            const volatility = (atr / price) * 100;
+
             // === DECISION ENGINE ===
             let signal = '🔵 NEUTRAL';
             let reason = 'Waiting for strong signal';
             let confidence = 0;
-    
+
             if (emaCrossUp && rsiNow < 70 && volumeSurge) {
                 signal = '🟢 STRONG BUY';
                 reason = 'EMA Cross Up + RSI Healthy + Volume Surge!';
-                confidence = Math.min(80 + volatility, 100); // Higher volatility = faster move
+                confidence = Math.min(80 + volatility, 100);
             } else if (emaCrossUp && rsiNow < 70) {
                 signal = '🟡 BUY';
                 reason = 'EMA Cross Up + RSI OK';
@@ -386,7 +257,7 @@
                 reason = 'Overbought — watch for reversal';
                 confidence = 50;
             }
-    
+
             // === UPDATE UI ===
             botSignal.innerHTML = `<strong>${signal} ${confidence > 0 ? `(${confidence}%)` : ''}</strong>`;
             botInfo.innerHTML = `
@@ -397,9 +268,7 @@
                 <small>Volume: ${volumeSurge ? 'Surging 🔥' : 'Normal'}</small><br>
                 <em>${reason}</em>
             `;
-    
-            // === BACKTEST (20 days) ===
-            const initial = 1000;
+
             const daysBack = Math.min(20, closes.length - 1);
             const buyPrice = closes[closes.length - 1 - daysBack];
             const profit = ((price - buyPrice) / buyPrice * 100).toFixed(2);
@@ -410,65 +279,48 @@
             console.error("Bot error:", err);
             updateError("API error");
         });
-    
+
         function updateError(msg) {
             botSignal.textContent = "Error";
             botInfo.innerHTML = `<small>${msg}</small>`;
         }
+
+        function volumesSlice(arr, len, offset = 0) {
+            return arr.slice(-len - offset, -offset || undefined);
+        }
     }
-    
-    // Run the bot after DOM loads
+
+    // Run bot after DOM loads
     runTradingBot();
 
-    // === EMA Calculator ===
+    // === HELPERS ===
     function calculateEMA(prices, period) {
         const k = 2 / (period + 1);
-        const ema = [];
-        let sum = 0;
-    
-        // First EMA = SMA of first `period` values
-        for (let i = 0; i < period; i++) {
-            sum += prices[i];
-        }
+        let sum = prices.slice(0, period).reduce((a, b) => a + b, 0);
         let currentEMA = sum / period;
-        ema.push(currentEMA);
-    
-        // Rest: EMA = Priceₜ × k + EMAₜ₋₁ × (1 - k)
+        const ema = [currentEMA];
         for (let i = period; i < prices.length; i++) {
             currentEMA = prices[i] * k + currentEMA * (1 - k);
             ema.push(currentEMA);
         }
-    
         return ema;
     }
-    
-    // === RSI Calculator (14-period) ===
+
     function calculateRSI(prices, period) {
-        const gains = [];
-        const losses = [];
-    
+        const gains = [], losses = [];
         for (let i = 1; i < prices.length; i++) {
             const diff = prices[i] - prices[i - 1];
             gains.push(diff > 0 ? diff : 0);
             losses.push(diff < 0 ? Math.abs(diff) : 0);
         }
-    
         const rsi = [];
         for (let i = period; i < gains.length; i++) {
             const avgGain = gains.slice(i - period, i).reduce((a, b) => a + b, 0) / period;
             const avgLoss = losses.slice(i - period, i).reduce((a, b) => a + b, 0) / period;
-    
-            if (avgLoss === 0) {
-                rsi.push(100); // Avoid divide by zero
-            } else {
-                const rs = avgGain / avgLoss;
-                rsi.push(100 - (100 / (1 + rs)));
-            }
+            rsi.push(avgLoss === 0 ? 100 : 100 - (100 / (1 + avgGain / avgLoss)));
         }
-    
         return rsi;
     }
 </script>
-
 </body>
 </html>
