@@ -101,7 +101,7 @@ h1 {
 
 h2 {
     font-family: 'Hweebaqs', sans-serif; /* Title font */
-    color: #777;
+    color: #a0a0a0;
     font-size: 24px;
     margin-bottom: 10px;
 }
@@ -173,7 +173,7 @@ form textarea {
 
 /* Footer */
 footer {
-    background-color: #3b3b3b;
+    background-color: #1a1a1a;
     color: #fff;
     text-align: center;
     padding: 10px 0;
