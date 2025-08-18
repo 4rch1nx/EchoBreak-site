@@ -16,7 +16,7 @@ body {
     font-size: 14px;
     margin: 0;
     padding: 0;
-    background-color: #303030;
+    background-color: #121212;
     color: #fff;
     display: flex;
     flex-direction: column;
@@ -25,7 +25,7 @@ body {
 
 /* Header */
 header {
-    background-color: #303030;
+    background-color: #1a1a1a;
     padding: 10px 20px;
     display: flex;
     justify-content: space-between;
@@ -81,7 +81,7 @@ nav ul li a.active {
 .separator {
     width: 100%; /* Full width */
     height: 1px; /* Thin line */
-    background-color: #fff; /* White color */
+    background-color: #333;
     margin: 0 auto; /* Centered horizontally */
 }
 
@@ -173,7 +173,7 @@ form textarea {
 
 /* Footer */
 footer {
-    background-color: #111;
+    background-color: #777;
     color: #fff;
     text-align: center;
     padding: 10px 0;
@@ -617,12 +617,6 @@ footer span {
     margin-left: 20px;
 }
 
-
-h2, h3, h4 {
-    margin-top: 30px;
-    color: #d25354;
-}
-
 /* Optional: Add some contrast for hierarchy */
 
 .school {
@@ -639,4 +633,56 @@ h2, h3, h4 {
     border-left: 2px solid #888;
     padding-left: 10px;
     margin-bottom: 10px;
+}
+
+
+.downloads-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 1.5rem;
+    margin-top: 2rem;
+}
+
+.download-item {
+    background: #1e1e1e;
+    border: 1px solid #333;
+    border-radius: 8px;
+    padding: 1rem;
+    text-align: center;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.download-item:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+    border-color: #555;
+}
+
+.download-item a {
+    display: block;
+    color: #64c8ff;
+    text-decoration: none;
+    font-weight: bold;
+    margin-top: 0.5rem;
+    word-break: break-word;
+}
+
+.download-item a:hover {
+    text-decoration: underline;
+}
+
+.download-item .icon {
+    font-size: 2.5rem;
+    color: #888;
+}
+
+/* Custom Button Example – you can duplicate and edit */
+.custom-button {
+    background: #2c2c2c;
+    border: 1px solid #4caf50;
+    color: #4caf50;
+}
+
+.custom-button:hover {
+    background: #254428;
 }
