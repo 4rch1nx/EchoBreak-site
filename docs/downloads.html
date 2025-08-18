@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EchoBreak - Downloads</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="icon" type="image/png" href="images/favicon.png">
+
+    <style>
+        /* Consistent with your design */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #121212;
+            color: #e0e0e0;
+            margin: 0;
+            padding: 0;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 5%;
+            background-color: #1a1a1a;
+            border-bottom: 1px solid #333;
+        }
+
+        #logo-link img.logo {
+            height: 50px;
+        }
+
+        nav ul {
+            list-style: none;
+            display: flex;
+            gap: 2rem;
+            margin: 0;
+            padding: 0;
+        }
+
+        nav a {
+            color: #bbb;
+            text-decoration: none;
+            font-size: 1.1rem;
+            transition: color 0.3s;
+        }
+
+        nav a:hover {
+            color: #fff;
+        }
+
+        .separator {
+            height: 1px;
+            background: #333;
+            margin: 0;
+        }
+
+        main {
+            padding: 2rem 5%;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        h1, h2 {
+            text-align: center;
+        }
+
+        .downloads-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .download-item {
+            background: #1e1e1e;
+            border: 1px solid #333;
+            border-radius: 8px;
+            padding: 1rem;
+            text-align: center;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .download-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+            border-color: #555;
+        }
+
+        .download-item a {
+            display: block;
+            color: #64c8ff;
+            text-decoration: none;
+            font-weight: bold;
+            margin-top: 0.5rem;
+            word-break: break-word;
+        }
+
+        .download-item a:hover {
+            text-decoration: underline;
+        }
+
+        .download-item .icon {
+            font-size: 2.5rem;
+            color: #888;
+        }
+
+        footer {
+            text-align: center;
+            padding: 1.5rem;
+            background: #1a1a1a;
+            margin-top: 3rem;
+            color: #777;
+        }
+
+        /* Custom Button Example – you can duplicate and edit */
+        .custom-button {
+            background: #2c2c2c;
+            border: 1px solid #4caf50;
+            color: #4caf50;
+        }
+
+        .custom-button:hover {
+            background: #254428;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header -->
+    <header>
+        <a href="personal_account.html" id="logo-link">
+            <img src="images/logo.png" alt="EchoBreak Logo" class="logo">
+        </a>
+        <nav>
+            <ul>
+                <space></space>
+                <li><a href="about.html">О нас</a></li>
+                <li><a href="projects.html">Проекты</a></li>
+                <li><a href="fanfics.html">Комьюнити</a></li>
+                <li><a href="crypto.html">Крипта</a></li>
+                <!-- <li><a href="downloads.html">Загрузки</a></li> -->
+            </ul>
+        </nav>
+    </header>
+
+    <!-- Separator Line -->
+    <div class="separator"></div>
+
+    <!-- Main Content -->
+    <main>
+        <h1>Загрузки</h1>
+        <h2>Все доступные файлы</h2>
+        <p style="text-align:center;">Нажмите на файл, чтобы начать загрузку.</p>
+
+        <div class="downloads-grid" id="downloadsList">
+            <!-- Files will be inserted here by JS -->
+            <p>Загрузка списка файлов...</p>
+        </div>
+
+        <!-- Example: Manually Add Custom Download Button -->
+        <!-- Just copy this block to add more custom buttons -->
+        <div class="downloads-grid">
+            <div class="download-item custom-button">
+                <div class="icon">📁</div>
+                <a href="https://github.com/4rch1nx/Luna-AI/archive/refs/heads/main.zip" download="Luna-AI.zip">
+                    Luna-AI.zip
+                </a>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer>
+        <p>EchoBreak, 2025</p>
+    </footer>
+
+    <script>
+        // Fetch the manifest.json file to get list of downloadable files
+        async function loadDownloads() {
+            const listContainer = document.getElementById('downloadsList');
+            listContainer.innerHTML = ''; // Clear loading message
+
+            try {
+                const response = await fetch('downloads/manifest.json');
+                if (!response.ok) throw new Error('Manifest not found');
+
+                const files = await response.json();
+
+                files.forEach(file => {
+                    const fileUrl = `downloads/${encodeURIComponent(file)}`;
+                    const fileName = file;
+
+                    const item = document.createElement('div');
+                    item.className = 'download-item';
+
+                    // Simple icon based on extension
+                    let icon = '📄';
+                    const ext = fileName.split('.').pop().toLowerCase();
+                    if (['jpg', 'png', 'gif', 'webp'].includes(ext)) icon = '🖼️';
+                    else if (['mp4', 'webm'].includes(ext)) icon = '🎥';
+                    else if (['mp3', 'wav'].includes(ext)) icon = '🎵';
+                    else if (['zip', 'rar', '7z'].includes(ext)) icon = '📦';
+                    else if (['exe', 'msi'].includes(ext)) icon = '⚙️';
+                    else if (['pdf'].includes(ext)) icon = '📕';
+                    else if (['txt'].includes(ext)) icon = '📝';
+
+                    item.innerHTML = `
+                        <div class="icon">${icon}</div>
+                        <a href="${fileUrl}" download="${fileName}">
+                            ${fileName}
+                        </a>
+                    `;
+                    listContainer.appendChild(item);
+                });
+            } catch (err) {
+                listContainer.innerHTML = `<p>Не удалось загрузить список файлов. <br><small>${err.message}</small></p>`;
+                console.error("Error loading downloads:", err);
+            }
+        }
+
+        // Load on page start
+        window.onload = loadDownloads;
+    </script>
+
+</body>
+</html>
