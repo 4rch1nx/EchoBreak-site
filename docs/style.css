@@ -686,3 +686,30 @@ footer span {
 .custom-button:hover {
     background: #254428;
 }
+
+
+.device-box {
+    border: 1px solid #333;
+    border-radius: 8px;
+    padding: 16px;
+    margin: 10px 0;
+    background-color: #1e1e1e;
+    color: #e0e0e0;
+    font-family: 'Courier New', monospace;
+}
+.device-box h3 {
+    margin-top: 0;
+    color: #d25354;
+}
+.status-ok {
+    color: #4CAF50;
+}
+.status-error {
+    color: #F44336;
+}
+.status-warning {
+    color: #FF9800;
+}
+#dashboard {
+    margin-top: 20px;
+}

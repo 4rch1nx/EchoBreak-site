@@ -27,11 +27,6 @@
 
     <div class="separator"></div>
 
-    <!-- Warning Banner -->
-    <div class="warning-banner">
-        Начиная с 1 сентября 2025 г., нужен активированный аккаунт для доступа!
-    </div>
-
     <!-- Main Content -->
     <main>
         <!-- <h1>EchoBreak</h1> -->
@@ -105,8 +100,8 @@
                     const firstFile = gist.files[fileKeys[0]];
                     const rawUrl = firstFile.raw_url;
 
-                    // Skip Gists starting with "user" or "$"
-                    if (/^(user|\$)/i.test(fileKeys[0])) {
+                    // Skip Gists starting with "user", "$". "status"
+                    if (/^(user|\$|status)/i.test(fileKeys[0])) {
                         continue;
                     }
 
