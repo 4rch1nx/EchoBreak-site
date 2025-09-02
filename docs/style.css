@@ -12,7 +12,8 @@
 
 /* Body Styling */
 body {
-    font-family: 'Hweebaqs', sans-serif; /* Main font */
+    font-family: 'Hweebaqs', sans-serif;
+    /* Main font */
     font-size: 14px;
     margin: 0;
     padding: 0;
@@ -20,7 +21,8 @@ body {
     color: #fff;
     display: flex;
     flex-direction: column;
-    min-height: 100vh; /* Ensure body takes at least full viewport height */
+    min-height: 100vh;
+    /* Ensure body takes at least full viewport height */
 }
 
 /* Header */
@@ -34,7 +36,8 @@ header {
 }
 
 header img {
-    width: 40px; /* Logo width */
+    width: 40px;
+    /* Logo width */
     height: 40px;
     /* margin-right: 10px; */
 }
@@ -45,7 +48,8 @@ header space {
 
 /* Active Logo */
 header #logo-link.active {
-    border-bottom: 2px solid #d25354; /* Highlight the logo when active */
+    border-bottom: 2px solid #d25354;
+    /* Highlight the logo when active */
 }
 
 left-label {
@@ -79,28 +83,35 @@ nav ul li a.active {
 
 /* Separator Line */
 .separator {
-    width: 100%; /* Full width */
-    height: 1px; /* Thin line */
+    width: 100%;
+    /* Full width */
+    height: 1px;
+    /* Thin line */
     background-color: #333;
-    margin: 0 auto; /* Centered horizontally */
+    margin: 0 auto;
+    /* Centered horizontally */
 }
 
 /* Main Content */
 main {
     padding: 20px;
-    flex: 1; /* Allow main content to take up remaining space */
-    text-align: center; /* Center the main content */
+    flex: 1;
+    /* Allow main content to take up remaining space */
+    text-align: center;
+    /* Center the main content */
 }
 
 h1 {
-    font-family: 'Hweebaqs', sans-serif; /* Title font */
+    font-family: 'Hweebaqs', sans-serif;
+    /* Title font */
     color: #e33533;
     font-size: 36px;
     margin-bottom: 20px;
 }
 
 h2 {
-    font-family: 'Hweebaqs', sans-serif; /* Title font */
+    font-family: 'Hweebaqs', sans-serif;
+    /* Title font */
     color: #a0a0a0;
     font-size: 24px;
     margin-bottom: 10px;
@@ -177,7 +188,8 @@ footer {
     color: #fff;
     text-align: center;
     padding: 10px 0;
-    margin-top: auto; /* Push footer to the bottom */
+    margin-top: auto;
+    /* Push footer to the bottom */
 }
 
 footer span {
@@ -220,7 +232,8 @@ footer span {
     margin-bottom: 10px;
     color: #fff;
     width: 220px;
-    border: 2px solid #d25354; /* Red border */
+    border: 2px solid #d25354;
+    /* Red border */
 }
 
 .rounded-rectangle label {
@@ -236,7 +249,8 @@ footer span {
 
 /* Warning Banner */
 .warning-banner {
-    background-color: #ffd700; /* Bright yellow */
+    background-color: #ffd700;
+    /* Bright yellow */
     color: #000;
     padding: 10px 20px;
     font-weight: bold;
@@ -260,7 +274,8 @@ footer span {
     }
 
     .fanfic-image {
-        height: auto; /* Adjust image height automatically */
+        height: auto;
+        /* Adjust image height automatically */
         width: 100%;
     }
 }
@@ -272,9 +287,12 @@ footer span {
     cursor: pointer;
     transition: transform 0.3s ease;
     height: auto;
-    display: flex; /* Enable Flexbox */
-    flex-direction: column; /* Stack children vertically */
-    justify-content: space-between; /* Push content to top and bottom */
+    display: flex;
+    /* Enable Flexbox */
+    flex-direction: column;
+    /* Stack children vertically */
+    justify-content: space-between;
+    /* Push content to top and bottom */
 }
 
 .fanfic-card:hover {
@@ -284,7 +302,8 @@ footer span {
 .fanfic-metadata {
     color: #fff;
     font-size: 10px;
-    margin-bottom: 10px; /* Add spacing between metadata and image */
+    margin-bottom: 10px;
+    /* Add spacing between metadata and image */
 }
 
 .read-button {
@@ -298,7 +317,8 @@ footer span {
     font-weight: bold;
     cursor: pointer;
     transition: background-color 0.3s ease;
-    margin-top: auto; /* Push the button to the bottom */
+    margin-top: auto;
+    /* Push the button to the bottom */
 }
 
 .read-button:hover {
@@ -307,7 +327,8 @@ footer span {
 
 .fanfic-image {
     width: 100%;
-    height: 100px; /* Adjust height for larger images */
+    height: 100px;
+    /* Adjust height for larger images */
     object-fit: cover;
     border-radius: 5px;
     margin-bottom: 10px;
@@ -341,7 +362,8 @@ footer span {
     max-width: 100%;
     height: 100%;
     padding: 20px;
-    overflow-y: auto; /* Enable vertical scrolling for long content */
+    overflow-y: auto;
+    /* Enable vertical scrolling for long content */
 }
 
 .close-modal {
@@ -391,10 +413,14 @@ footer span {
 
 /* Separator Line in Modal */
 .modal-separator {
-    width: 100%; /* Full width */
-    height: 1px; /* Thin line */
-    background-color: #fff; /* White color */
-    margin: 10px 0; /* Add spacing above and below the line */
+    width: 100%;
+    /* Full width */
+    height: 1px;
+    /* Thin line */
+    background-color: #fff;
+    /* White color */
+    margin: 10px 0;
+    /* Add spacing above and below the line */
 }
 
 /* Crypto Card Styles */
@@ -537,6 +563,7 @@ footer span {
         transform: translate(0) scale(1);
         opacity: 0.8;
     }
+
     100% {
         transform: translate(var(--x), var(--y)) scale(0);
         opacity: 0;
@@ -558,6 +585,7 @@ footer span {
         transform: translate(0, 0) scale(1);
         opacity: 1;
     }
+
     100% {
         transform: translate(var(--x), var(--y)) scale(0);
         opacity: 0;
@@ -613,7 +641,9 @@ footer span {
     height: 180px !important;
 }
 
-.school, .room, .device-container {
+.school,
+.room,
+.device-container {
     margin-left: 20px;
 }
 
@@ -624,11 +654,13 @@ footer span {
     padding-left: 10px;
     margin-bottom: 20px;
 }
+
 .room {
     border-left: 2px solid #ccc;
     padding-left: 10px;
     margin-bottom: 15px;
 }
+
 .device-container {
     border-left: 2px solid #888;
     padding-left: 10px;
@@ -654,7 +686,7 @@ footer span {
 
 .download-item:hover {
     transform: translateY(-5px);
-    box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
     border-color: #555;
 }
 
@@ -697,19 +729,24 @@ footer span {
     color: #e0e0e0;
     font-family: 'Courier New', monospace;
 }
+
 .device-box h3 {
     margin-top: 0;
     color: #d25354;
 }
+
 .status-ok {
     color: #4CAF50;
 }
+
 .status-error {
     color: #F44336;
 }
+
 .status-warning {
     color: #FF9800;
 }
+
 #dashboard {
     margin-top: 20px;
 }

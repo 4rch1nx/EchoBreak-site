@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="ru">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -9,6 +10,7 @@
     <!-- Import CryptoJS for password hashing -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
 </head>
+
 <body>
     <!-- Header -->
     <header>
@@ -52,7 +54,7 @@
         // GitHub Personal Access Token (Replace with your token)
         const githubToken = 'ghp_iFEyATUgNTdKWnja' + '0PorXZQUKu2u8P4EPxhI';
 
-        document.getElementById('registerForm').addEventListener('submit', async function(event) {
+        document.getElementById('registerForm').addEventListener('submit', async function (event) {
             event.preventDefault();
             const name = document.getElementById('reg-name').value.trim();
             const email = document.getElementById('email').value.trim();
@@ -104,9 +106,9 @@
                         public: false, // Keep the registration data private
                         files: {
                             [fileName]: { // Use "user" + email as the filename
-                                content: JSON.stringify({ 
-                                    name, 
-                                    email, 
+                                content: JSON.stringify({
+                                    name,
+                                    email,
                                     password: hashedPassword, // Store the hashed password
                                     userToken: '' // Add empty userToken
                                 })
@@ -130,4 +132,5 @@
         });
     </script>
 </body>
+
 </html>

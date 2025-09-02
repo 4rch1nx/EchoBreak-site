@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="ru">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -9,6 +10,7 @@
     <!-- Add this script tag for making API requests -->
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 </head>
+
 <body>
     <!-- Header -->
     <header>
@@ -65,7 +67,7 @@
         });
 
         // Existing Script for Form Submission and GitHub Gist Upload
-        document.getElementById('uploadForm').addEventListener('submit', async function(event) {
+        document.getElementById('uploadForm').addEventListener('submit', async function (event) {
             event.preventDefault(); // Prevent the form from submitting traditionally
             const title = document.getElementById('title').value.trim();
             const text = document.getElementById('text').value.trim();
@@ -118,4 +120,5 @@
         });
     </script>
 </body>
+
 </html>
