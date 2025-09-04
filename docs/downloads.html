@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>EchoBreak</title>
+    <title>EchoBreak - Файлы</title>
     <link rel="stylesheet" href="style.css">
 
     <link rel="icon" type="image/png" href="images/favicon.png">
@@ -33,12 +33,10 @@
 
     <!-- Main Content -->
     <main>
-        <h1>Загрузки</h1>
-        <h2>Все доступные файлы</h2>
+        <h1>Файлы</h1>
         <p style="text-align:center;">Нажмите на файл, чтобы начать загрузку.</p>
 
         <div class="downloads-grid" id="downloadsList">
-            <!-- Files will be inserted here by JS -->
             <p>Загрузка списка файлов...</p>
         </div>
 
@@ -71,10 +69,9 @@
     </footer>
 
     <script>
-        // Fetch the manifest.json file to get list of downloadable files
         async function loadDownloads() {
             const listContainer = document.getElementById('downloadsList');
-            listContainer.innerHTML = ''; // Clear loading message
+            listContainer.innerHTML = '';
 
             try {
                 const response = await fetch('downloads/manifest.json');
@@ -89,7 +86,6 @@
                     const item = document.createElement('div');
                     item.className = 'download-item';
 
-                    // Simple icon based on extension
                     let icon = '📄';
                     const ext = fileName.split('.').pop().toLowerCase();
                     if (['jpg', 'png', 'gif', 'webp'].includes(ext)) icon = '🖼️';
@@ -114,7 +110,6 @@
             }
         }
 
-        // Load on page start
         window.onload = loadDownloads;
     </script>
 </body>

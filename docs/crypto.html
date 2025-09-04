@@ -1,266 +1,269 @@
 <!DOCTYPE html>
 <html lang="ru">
+
 <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>EchoBreak - Крипта</title>
     <link rel="stylesheet" href="style.css" />
     <link rel="icon" type="image/png" href="images/favicon.png" />
 </head>
+
 <body>
-<header>
-    <a href="index.html" id="logo-link">
-        <img src="images/logo.png" alt="EchoBreak Logo" class="logo">
-    </a>
-    <nav>
-        <ul>
-            <space></space>
-            <li><a href="about.html">О нас</a></li>
-            <li><a href="projects.html">Проекты</a></li>
-            <li><a href="fanfics.html">Комьюнити</a></li>
-            <li><a href="crypto.html" class="active">Крипта</a></li>
-        </ul>
-    </nav>
-</header>
-<div class="separator"></div>
-<main>
-    <h1>Crypto</h1>
-    <h2>For educational purposes only!</h2>
-    <div id="xmr-stats">
-        <div class="crypto-card">
-            <div class="crypto-card-body">
-                <div class="balance">
-                    <span>Выплачено:</span>
-                    <div class="amount" id="xmr-amount">Загрузка...</div>
-                    <div class="amount-rub" id="rub-amount"></div>
-                </div>
-                <div class="currency-logo">
-                    <img src="images/monero-logo.png" alt="Monero Logo">
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- TradingView Widget BEGIN -->
-    <div class="tradingview-widget-container" style="margin: auto;">
-      <div class="tradingview-widget-container__widget"></div>
-      <div class="tradingview-widget-copyright"><a href="https://www.tradingview.com/" rel="noopener nofollow" target="_blank"><span class="blue-text">XMRUSD and NVDA quotes by TradingView</span></a></div>
-      <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-symbol-overview.js" async>
-      {
-      "lineWidth": 2,
-      "lineType": 0,
-      "chartType": "area",
-      "fontColor": "rgb(106, 109, 120)",
-      "gridLineColor": "rgba(242, 242, 242, 0.06)",
-      "volumeUpColor": "rgba(34, 171, 148, 0.5)",
-      "volumeDownColor": "rgba(247, 82, 95, 0.5)",
-      "backgroundColor": "#0F0F0F",
-      "widgetFontColor": "#DBDBDB",
-      "upColor": "#22ab94",
-      "downColor": "#f7525f",
-      "borderUpColor": "#22ab94",
-      "borderDownColor": "#f7525f",
-      "wickUpColor": "#22ab94",
-      "wickDownColor": "#f7525f",
-      "colorTheme": "dark",
-      "isTransparent": true,
-      "locale": "en",
-      "chartOnly": false,
-      "scalePosition": "right",
-      "scaleMode": "Normal",
-      "fontFamily": "-apple-system, BlinkMacSystemFont, Trebuchet MS, Roboto, Ubuntu, sans-serif",
-      "valuesTracking": "1",
-      "changeMode": "price-and-percent",
-      "symbols": [
-        [
-          "KRAKEN:XMRUSD|1M"
-        ],
-        [
-          "NASDAQ:NVDA|1M"
-        ]
-      ],
-      "dateRanges": [
-        "1d|1",
-        "1m|30",
-        "3m|60",
-        "12m|1D",
-        "60m|1W",
-        "all|1M"
-      ],
-      "fontSize": "10",
-      "headerFontSize": "medium",
-      "autosize": false,
-      "width": 320,
-      "height": 520,
-      "noTimeScale": false,
-      "hideDateRanges": false,
-      "hideMarketStatus": false,
-      "hideSymbolLogo": false
-    }
-      </script>
-    </div>
-    <!-- TradingView Widget END -->
-
-    <div id="trading-bot">
-        <div class="crypto-card">
-            <div class="crypto-card-body">
-                <div class="balance">
-                    <span>Trading Bot (Alpha ver.):</span>
-                    <p id="bot-signal">Loading...</p>
-                    <div class="amount-rub" id="bot-info">
-                        <small>Price: <span id="current-price">—</span> ₽</small><br>
-                        <small>Strategy: SMA Crossover (10 &amp; 20 days)</small>
+    <header>
+        <a href="index.html" id="logo-link">
+            <img src="images/logo.png" alt="EchoBreak Logo" class="logo">
+        </a>
+        <nav>
+            <ul>
+                <space></space>
+                <li><a href="about.html">О нас</a></li>
+                <li><a href="projects.html">Проекты</a></li>
+                <li><a href="fanfics.html">Комьюнити</a></li>
+                <li><a href="crypto.html" class="active">Крипта</a></li>
+            </ul>
+        </nav>
+    </header>
+    <div class="separator"></div>
+    <main>
+        <h1>Крипта</h1>
+        <h2>Исключительно в образовательных целях!</h2>
+        <div id="xmr-stats">
+            <div class="crypto-card">
+                <div class="crypto-card-body">
+                    <div class="balance">
+                        <span>Выплачено:</span>
+                        <div class="amount" id="xmr-amount">Загрузка...</div>
+                        <div class="amount-rub" id="rub-amount"></div>
+                    </div>
+                    <div class="currency-logo">
+                        <img src="images/monero-logo.png" alt="Monero Logo">
                     </div>
                 </div>
-                <div class="currency-logo">
-                    <img src="images/nvidia-logo.png" alt="NVDA Logo">
+            </div>
+        </div>
+
+        <!-- TradingView Widget BEGIN -->
+        <div class="tradingview-widget-container" style="margin: auto;">
+            <div class="tradingview-widget-container__widget"></div>
+            <div class="tradingview-widget-copyright"><a href="https://www.tradingview.com/" rel="noopener nofollow"
+                    target="_blank"><span class="blue-text">XMRUSD and NVDA quotes by TradingView</span></a></div>
+            <script type="text/javascript"
+                src="https://s3.tradingview.com/external-embedding/embed-widget-symbol-overview.js" async>
+                    {
+                        "lineWidth": 2,
+                            "lineType": 0,
+                                "chartType": "area",
+                                    "fontColor": "rgb(106, 109, 120)",
+                                        "gridLineColor": "rgba(242, 242, 242, 0.06)",
+                                            "volumeUpColor": "rgba(34, 171, 148, 0.5)",
+                                                "volumeDownColor": "rgba(247, 82, 95, 0.5)",
+                                                    "backgroundColor": "#0F0F0F",
+                                                        "widgetFontColor": "#DBDBDB",
+                                                            "upColor": "#22ab94",
+                                                                "downColor": "#f7525f",
+                                                                    "borderUpColor": "#22ab94",
+                                                                        "borderDownColor": "#f7525f",
+                                                                            "wickUpColor": "#22ab94",
+                                                                                "wickDownColor": "#f7525f",
+                                                                                    "colorTheme": "dark",
+                                                                                        "isTransparent": true,
+                                                                                            "locale": "en",
+                                                                                                "chartOnly": false,
+                                                                                                    "scalePosition": "right",
+                                                                                                        "scaleMode": "Normal",
+                                                                                                            "fontFamily": "-apple-system, BlinkMacSystemFont, Trebuchet MS, Roboto, Ubuntu, sans-serif",
+                                                                                                                "valuesTracking": "1",
+                                                                                                                    "changeMode": "price-and-percent",
+                                                                                                                        "symbols": [
+                                                                                                                            [
+                                                                                                                                "KRAKEN:XMRUSD|1M"
+                                                                                                                            ],
+                                                                                                                            [
+                                                                                                                                "NASDAQ:NVDA|1M"
+                                                                                                                            ]
+                                                                                                                        ],
+                                                                                                                            "dateRanges": [
+                                                                                                                                "1d|1",
+                                                                                                                                "1m|30",
+                                                                                                                                "3m|60",
+                                                                                                                                "12m|1D",
+                                                                                                                                "60m|1W",
+                                                                                                                                "all|1M"
+                                                                                                                            ],
+                                                                                                                                "fontSize": "10",
+                                                                                                                                    "headerFontSize": "medium",
+                                                                                                                                        "autosize": false,
+                                                                                                                                            "width": 320,
+                                                                                                                                                "height": 520,
+                                                                                                                                                    "noTimeScale": false,
+                                                                                                                                                        "hideDateRanges": false,
+                                                                                                                                                            "hideMarketStatus": false,
+                                                                                                                                                                "hideSymbolLogo": false
+                    }
+                </script>
+        </div>
+        <!-- TradingView Widget END -->
+
+        <div id="trading-bot">
+            <div class="crypto-card">
+                <div class="crypto-card-body">
+                    <div class="balance">
+                        <span>Trading Bot (Alpha ver.):</span>
+                        <p id="bot-signal">Loading...</p>
+                        <div class="amount-rub" id="bot-info">
+                            <small>Price: <span id="current-price">—</span> ₽</small><br>
+                            <small>Strategy: SMA Crossover (10 &amp; 20 days)</small>
+                        </div>
+                    </div>
+                    <div class="currency-logo">
+                        <img src="images/nvidia-logo.png" alt="NVDA Logo">
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
 
-    <!-- TradingView Widget BEGIN -->
-    <div class="tradingview-widget-container" style="margin: auto;">
-      <div class="tradingview-widget-container__widget"></div>
-      <div class="tradingview-widget-copyright"><a href="https://www.tradingview.com/symbols/NASDAQ-NVDA/technicals/?exchange=NASDAQ" rel="noopener nofollow" target="_blank"><span class="blue-text">Technical analysis for NVDA by TradingView</span></a></div>
-      <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-technical-analysis.js" async>
-      {
-      "colorTheme": "dark",
-      "displayMode": "single",
-      "isTransparent": true,
-      "locale": "en",
-      "interval": "1h",
-      "disableInterval": false,
-      "width": 300,
-      "height": 400,
-      "symbol": "NASDAQ:NVDA",
-      "showIntervalTabs": true
-    }
-      </script>
-    </div>
-    <!-- TradingView Widget END -->
+        <!-- TradingView Widget BEGIN -->
+        <div class="tradingview-widget-container" style="margin: auto;">
+            <div class="tradingview-widget-container__widget"></div>
+            <div class="tradingview-widget-copyright"><a
+                    href="https://www.tradingview.com/symbols/NASDAQ-NVDA/technicals/?exchange=NASDAQ"
+                    rel="noopener nofollow" target="_blank"><span class="blue-text">Technical analysis for NVDA by
+                        TradingView</span></a></div>
+            <script type="text/javascript"
+                src="https://s3.tradingview.com/external-embedding/embed-widget-technical-analysis.js" async>
+                    {
+                        "colorTheme": "dark",
+                            "displayMode": "single",
+                                "isTransparent": true,
+                                    "locale": "en",
+                                        "interval": "1h",
+                                            "disableInterval": false,
+                                                "width": 300,
+                                                    "height": 400,
+                                                        "symbol": "NASDAQ:NVDA",
+                                                            "showIntervalTabs": true
+                    }
+                </script>
+        </div>
+        <!-- TradingView Widget END -->
 
-</main>
-<footer>
-    <p>EchoBreak, 2025</p>
-</footer>
+    </main>
+    <footer>
+        <p>EchoBreak, 2025</p>
+    </footer>
 
-<script>
-    document.addEventListener('DOMContentLoaded', () => {
-        const xmrAmount = document.getElementById('xmr-amount');
-        const rubAmount = document.getElementById('rub-amount');
-        const WALLET_ADDRESS = '42u3Aeoqq53Y8bKGT7RdawhtcS9AqYuKEDwwYL4BiS5s34964uaJU2zWB7miadNEBWCjcMXtMjcsa6boEZmpaeTV4ESEqpU';
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const xmrAmount = document.getElementById('xmr-amount');
+            const rubAmount = document.getElementById('rub-amount');
+            const WALLET_ADDRESS = '42u3Aeoqq53Y8bKGT7RdawhtcS9AqYuKEDwwYL4BiS5s34964uaJU2zWB7miadNEBWCjcMXtMjcsa6boEZmpaeTV4ESEqpU';
 
-        // Fetch wallet stats
-        fetch(`https://api.moneroocean.stream/miner/${WALLET_ADDRESS}/stats`)
-            .then(response => {
-                if (!response.ok) throw new Error('Wallet fetch error');
-                return response.json();
-            })
-            .then(data => {
-                const totalDue = parseFloat(data.amtPaid / 1e12 || 0).toFixed(6);
+            fetch(`https://api.moneroocean.stream/miner/${WALLET_ADDRESS}/stats`)
+                .then(response => {
+                    if (!response.ok) throw new Error('Wallet fetch error');
+                    return response.json();
+                })
+                .then(data => {
+                    const totalDue = parseFloat(data.amtPaid / 1e12 || 0).toFixed(6);
 
-                // Fetch current XMR to RUB price
-                return fetch('https://api.coingecko.com/api/v3/simple/price?ids=monero&vs_currencies=rub')
-                    .then(res => {
-                        if (!res.ok) throw new Error('Price fetch error');
-                        return res.json();
-                    })
-                    .then(priceData => {
-                        const xmrPriceRub = priceData.monero.rub;
-                        const rubValue = (parseFloat(totalDue) * xmrPriceRub).toFixed(2);
-                        xmrAmount.textContent = `${totalDue} XMR`;
-                        rubAmount.textContent = `${rubValue} ₽`;
-                    });
-            })
-            .catch(error => {
-                console.error('Error fetching data:', error);
-                xmrAmount.textContent = '—';
-                rubAmount.textContent = '—';
-            });
-    });
+                    return fetch('https://api.coingecko.com/api/v3/simple/price?ids=monero&vs_currencies=rub')
+                        .then(res => {
+                            if (!res.ok) throw new Error('Price fetch error');
+                            return res.json();
+                        })
+                        .then(priceData => {
+                            const xmrPriceRub = priceData.monero.rub;
+                            const rubValue = (parseFloat(totalDue) * xmrPriceRub).toFixed(2);
+                            xmrAmount.textContent = `${totalDue} XMR`;
+                            rubAmount.textContent = `${rubValue} ₽`;
+                        });
+                })
+                .catch(error => {
+                    console.error('Error fetching data:', error);
+                    xmrAmount.textContent = '—';
+                    rubAmount.textContent = '—';
+                });
+        });
 
-    // === TRADING BOT LOGIC ===
-    function runTradingBot() {
-        const botSignal = document.getElementById('bot-signal');
-        const currentPriceElem = document.getElementById('current-price');
-        const botInfo = document.getElementById('bot-info');
-        const SYMBOL = 'NVDA';
-        const FMP_API_KEY = '2bxb0il75hhAFMqNlppJ3yevZo0J7xMI';
-        const STOCK_URL = `https://financialmodelingprep.com/api/v3/historical-price-full/${SYMBOL}?timeseries=30&apikey=${FMP_API_KEY}`;
-        const EXCHANGE_URL = 'https://api.exchangerate-api.com/v4/latest/USD';
+        function runTradingBot() {
+            const botSignal = document.getElementById('bot-signal');
+            const currentPriceElem = document.getElementById('current-price');
+            const botInfo = document.getElementById('bot-info');
+            const SYMBOL = 'NVDA';
+            const FMP_API_KEY = '2bxb0il75hhAFMqNlppJ3yevZo0J7xMI';
+            const STOCK_URL = `https://financialmodelingprep.com/api/v3/historical-price-full/${SYMBOL}?timeseries=30&apikey=${FMP_API_KEY}`;
+            const EXCHANGE_URL = 'https://api.exchangerate-api.com/v4/latest/USD';
 
-        Promise.all([
-            fetch(STOCK_URL).then(r => r.json()),
-            fetch(EXCHANGE_URL).then(r => r.json())
-        ])
-        .then(([stockData, exchangeData]) => {
-            const usdToRub = exchangeData.rates.RUB;
-            const hist = stockData.historical.slice(0, 30).reverse(); // Oldest → Newest
-            if (hist.length < 14) return updateError("Not enough data");
+            Promise.all([
+                fetch(STOCK_URL).then(r => r.json()),
+                fetch(EXCHANGE_URL).then(r => r.json())
+            ])
+                .then(([stockData, exchangeData]) => {
+                    const usdToRub = exchangeData.rates.RUB;
+                    const hist = stockData.historical.slice(0, 30).reverse();
+                    if (hist.length < 14) return updateError("Not enough data");
 
-            const closes = hist.map(h => parseFloat(h.close) * usdToRub);
-            const price = closes[closes.length - 1];
-            currentPriceElem.textContent = price.toFixed(2);
+                    const closes = hist.map(h => parseFloat(h.close) * usdToRub);
+                    const price = closes[closes.length - 1];
+                    currentPriceElem.textContent = price.toFixed(2);
 
-            // === INDICATORS ===
-            const ema12 = calculateEMA(closes, 12);
-            const ema26 = calculateEMA(closes, 26);
-            const emaBull = ema12[ema12.length - 1] > ema26[ema26.length - 1];
-            const emaPrevBull = ema12[ema12.length - 2] > ema26[ema26.length - 2];
-            const emaCrossUp = !emaPrevBull && emaBull;
-            const emaCrossDown = emaPrevBull && !emaBull;
+                    // === INDICATORS ===
+                    const ema12 = calculateEMA(closes, 12);
+                    const ema26 = calculateEMA(closes, 26);
+                    const emaBull = ema12[ema12.length - 1] > ema26[ema26.length - 1];
+                    const emaPrevBull = ema12[ema12.length - 2] > ema26[ema26.length - 2];
+                    const emaCrossUp = !emaPrevBull && emaBull;
+                    const emaCrossDown = emaPrevBull && !emaBull;
 
-            const rsi = calculateRSI(closes, 14);
-            const rsiNow = rsi[rsi.length - 1];
+                    const rsi = calculateRSI(closes, 14);
+                    const rsiNow = rsi[rsi.length - 1];
 
-            const recentVol = volumesSlice(closes, 5).reduce((a, b) => a + b.volume, 0) / 5;
-            const pastVol = volumesSlice(closes, 10, 5).reduce((a, b) => a + b.volume, 0) / 10;
-            const volumeSurge = recentVol > pastVol * 1.3;
+                    const recentVol = volumesSlice(closes, 5).reduce((a, b) => a + b.volume, 0) / 5;
+                    const pastVol = volumesSlice(closes, 10, 5).reduce((a, b) => a + b.volume, 0) / 10;
+                    const volumeSurge = recentVol > pastVol * 1.3;
 
-            let trSum = 0;
-            const volumes = hist.map(h => h.volume);
-            for (let i = 1; i < 14; i++) {
-                const tr = Math.max(
-                    hist[i].high * usdToRub - hist[i].low * usdToRub,
-                    Math.abs(hist[i].high * usdToRub - closes[i - 1]),
-                    Math.abs(hist[i].low * usdToRub - closes[i - 1])
-                );
-                trSum += tr;
-            }
-            const atr = trSum / 14;
-            const volatility = (atr / price) * 100;
+                    let trSum = 0;
+                    const volumes = hist.map(h => h.volume);
+                    for (let i = 1; i < 14; i++) {
+                        const tr = Math.max(
+                            hist[i].high * usdToRub - hist[i].low * usdToRub,
+                            Math.abs(hist[i].high * usdToRub - closes[i - 1]),
+                            Math.abs(hist[i].low * usdToRub - closes[i - 1])
+                        );
+                        trSum += tr;
+                    }
+                    const atr = trSum / 14;
+                    const volatility = (atr / price) * 100;
 
-            // === DECISION ENGINE ===
-            let signal = '🔵 NEUTRAL';
-            let reason = 'Waiting for strong signal';
-            let confidence = 0;
+                    let signal = '🔵 NEUTRAL';
+                    let reason = 'Waiting for strong signal';
+                    let confidence = 0;
 
-            if (emaCrossUp && rsiNow < 70 && volumeSurge) {
-                signal = '🟢 STRONG BUY';
-                reason = 'EMA Cross Up + RSI Healthy + Volume Surge!';
-                confidence = Math.min(80 + volatility, 100);
-            } else if (emaCrossUp && rsiNow < 70) {
-                signal = '🟡 BUY';
-                reason = 'EMA Cross Up + RSI OK';
-                confidence = 65;
-            } else if (emaBull && rsiNow < 65) {
-                signal = '🟢 HOLD';
-                reason = 'Uptrend ongoing, no exit yet';
-                confidence = 60;
-            } else if (emaCrossDown && rsiNow > 30) {
-                signal = '🔴 SELL';
-                reason = 'EMA Cross Down + RSI not oversold';
-                confidence = 70;
-            } else if (rsiNow > 75 && emaBull && !volumeSurge) {
-                signal = '🟠 CAUTION';
-                reason = 'Overbought — watch for reversal';
-                confidence = 50;
-            }
+                    if (emaCrossUp && rsiNow < 70 && volumeSurge) {
+                        signal = '🟢 STRONG BUY';
+                        reason = 'EMA Cross Up + RSI Healthy + Volume Surge!';
+                        confidence = Math.min(80 + volatility, 100);
+                    } else if (emaCrossUp && rsiNow < 70) {
+                        signal = '🟡 BUY';
+                        reason = 'EMA Cross Up + RSI OK';
+                        confidence = 65;
+                    } else if (emaBull && rsiNow < 65) {
+                        signal = '🟢 HOLD';
+                        reason = 'Uptrend ongoing, no exit yet';
+                        confidence = 60;
+                    } else if (emaCrossDown && rsiNow > 30) {
+                        signal = '🔴 SELL';
+                        reason = 'EMA Cross Down + RSI not oversold';
+                        confidence = 70;
+                    } else if (rsiNow > 75 && emaBull && !volumeSurge) {
+                        signal = '🟠 CAUTION';
+                        reason = 'Overbought — watch for reversal';
+                        confidence = 50;
+                    }
 
-            // === UPDATE UI ===
-            botSignal.innerHTML = `<strong>${signal} ${confidence > 0 ? `(${confidence}%)` : ''}</strong>`;
-            botInfo.innerHTML = `
+                    botSignal.innerHTML = `<strong>${signal} ${confidence > 0 ? `(${confidence}%)` : ''}</strong>`;
+                    botInfo.innerHTML = `
                 <small>Price: ${price.toFixed(2)} ₽</small><br>
                 <small>RSI(14): ${rsiNow.toFixed(2)}</small><br>
                 <small>Trend: ${emaBull ? 'Bullish' : 'Bearish'}</small><br>
@@ -269,58 +272,57 @@
                 <em>${reason}</em>
             `;
 
-            const daysBack = Math.min(20, closes.length - 1);
-            const buyPrice = closes[closes.length - 1 - daysBack];
-            const profit = ((price - buyPrice) / buyPrice * 100).toFixed(2);
-            const emoji = profit >= 0 ? '🟢' : '🔴';
-            botInfo.innerHTML += `<br><small>Performance (20d): ${emoji} ${Math.abs(profit)}%</small>`;
-        })
-        .catch(err => {
-            console.error("Bot error:", err);
-            updateError("API error");
-        });
+                    const daysBack = Math.min(20, closes.length - 1);
+                    const buyPrice = closes[closes.length - 1 - daysBack];
+                    const profit = ((price - buyPrice) / buyPrice * 100).toFixed(2);
+                    const emoji = profit >= 0 ? '🟢' : '🔴';
+                    botInfo.innerHTML += `<br><small>Performance (20d): ${emoji} ${Math.abs(profit)}%</small>`;
+                })
+                .catch(err => {
+                    console.error("Bot error:", err);
+                    updateError("API error");
+                });
 
-        function updateError(msg) {
-            botSignal.textContent = "Error";
-            botInfo.innerHTML = `<small>${msg}</small>`;
+            function updateError(msg) {
+                botSignal.textContent = "Error";
+                botInfo.innerHTML = `<small>${msg}</small>`;
+            }
+
+            function volumesSlice(arr, len, offset = 0) {
+                return arr.slice(-len - offset, -offset || undefined);
+            }
         }
 
-        function volumesSlice(arr, len, offset = 0) {
-            return arr.slice(-len - offset, -offset || undefined);
-        }
-    }
+        runTradingBot();
 
-    // Run bot after DOM loads
-    runTradingBot();
+        function calculateEMA(prices, period) {
+            const k = 2 / (period + 1);
+            let sum = prices.slice(0, period).reduce((a, b) => a + b, 0);
+            let currentEMA = sum / period;
+            const ema = [currentEMA];
+            for (let i = period; i < prices.length; i++) {
+                currentEMA = prices[i] * k + currentEMA * (1 - k);
+                ema.push(currentEMA);
+            }
+            return ema;
+        }
 
-    // === HELPERS ===
-    function calculateEMA(prices, period) {
-        const k = 2 / (period + 1);
-        let sum = prices.slice(0, period).reduce((a, b) => a + b, 0);
-        let currentEMA = sum / period;
-        const ema = [currentEMA];
-        for (let i = period; i < prices.length; i++) {
-            currentEMA = prices[i] * k + currentEMA * (1 - k);
-            ema.push(currentEMA);
+        function calculateRSI(prices, period) {
+            const gains = [], losses = [];
+            for (let i = 1; i < prices.length; i++) {
+                const diff = prices[i] - prices[i - 1];
+                gains.push(diff > 0 ? diff : 0);
+                losses.push(diff < 0 ? Math.abs(diff) : 0);
+            }
+            const rsi = [];
+            for (let i = period; i < gains.length; i++) {
+                const avgGain = gains.slice(i - period, i).reduce((a, b) => a + b, 0) / period;
+                const avgLoss = losses.slice(i - period, i).reduce((a, b) => a + b, 0) / period;
+                rsi.push(avgLoss === 0 ? 100 : 100 - (100 / (1 + avgGain / avgLoss)));
+            }
+            return rsi;
         }
-        return ema;
-    }
-
-    function calculateRSI(prices, period) {
-        const gains = [], losses = [];
-        for (let i = 1; i < prices.length; i++) {
-            const diff = prices[i] - prices[i - 1];
-            gains.push(diff > 0 ? diff : 0);
-            losses.push(diff < 0 ? Math.abs(diff) : 0);
-        }
-        const rsi = [];
-        for (let i = period; i < gains.length; i++) {
-            const avgGain = gains.slice(i - period, i).reduce((a, b) => a + b, 0) / period;
-            const avgLoss = losses.slice(i - period, i).reduce((a, b) => a + b, 0) / period;
-            rsi.push(avgLoss === 0 ? 100 : 100 - (100 / (1 + avgGain / avgLoss)));
-        }
-        return rsi;
-    }
-</script>
+    </script>
 </body>
+
 </html>

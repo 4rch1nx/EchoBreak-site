@@ -7,7 +7,6 @@
     <title>EchoBreak - Личный кабинет</title>
     <link rel="stylesheet" href="style.css">
     <link rel="icon" type="image/png" href="images/favicon.png">
-    <!-- Add this script tag for making API requests -->
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 </head>
 
@@ -30,11 +29,9 @@
     <div class="separator"></div>
     <!-- Main Content -->
     <main>
-        <!-- Tab Content -->
         <div class="tab-content">
             <div id="profile-tab" class="tab-pane active">
                 <h2>${role}</h2>
-                <!-- Avatar Container -->
                 <div class="avatar-container">
                     <div class="button-group">
                         <button class="transparent-button" id="addPhotoButton">Добавить фото</button>
@@ -43,7 +40,6 @@
                         <img src="images/avatar-placeholder.png" id="user-avatar" class="circular-avatar">
                     </div>
                 </div>
-                <!-- User Information -->
                 <div class="user-info">
                     <left-label>Имя:</left-label>
                     <div class="rounded-rectangle">
@@ -58,7 +54,6 @@
                         <p id="activationKeyField"></p>
                     </div>
                 </div>
-                <!-- Buttons -->
                 <div class="buttons-container">
                     <button class="transparent-button" id="changePasswordButton">Сменить пароль</button>
                     <button class="button" id="logoutButton">Выйти</button>
@@ -74,15 +69,13 @@
         document.addEventListener('DOMContentLoaded', async function () {
             const isLoggedIn = localStorage.getItem('isLoggedIn');
             if (!isLoggedIn || isLoggedIn !== 'true') {
-                // User is not logged in
                 const mainContent = document.querySelector('main');
                 mainContent.innerHTML = `
                 <h2>Вы не вошли в аккаунт</h2>
                 <button class="button" onclick="location.href='registration.html'">Войти</button>
             `;
-                return; // Stop further execution
+                return;
             }
-            // If the user is logged in, fetch their email from localStorage
             const email = localStorage.getItem('userEmail');
             if (!email) {
                 const mainContent = document.querySelector('main');
@@ -129,11 +122,9 @@
                 }
                 const fileContent = await fileResponse.text();
                 const userData = JSON.parse(fileContent);
-                // Populate the user's profile information
                 document.querySelector('#profile-tab h2').textContent = `${userData.role || 'Пользователь'}`;
                 document.getElementById('nameField').textContent = `${userData.name}`;
                 document.getElementById('emailField').textContent = `${userData.email}`;
-                // Check and Load Profile Picture on Page Load
                 const profilePicFileName = `$${userData.name}$${userData.email}_ProfilePic`;
                 const profilePicFileExists = userGist.files[profilePicFileName];
                 const userAvatar = document.getElementById('user-avatar');
@@ -142,10 +133,9 @@
                     const profilePicResponse = await fetch(profilePicRawUrl);
                     if (profilePicResponse.ok) {
                         const profilePicBase64 = await profilePicResponse.text();
-                        userAvatar.src = profilePicBase64; // Set the Base64 image as the avatar source
+                        userAvatar.src = profilePicBase64;
                     }
                 }
-                // Handle Profile Picture Upload
                 const addPhotoButton = document.getElementById('addPhotoButton');
                 addPhotoButton.addEventListener('click', async function () {
                     const input = document.createElement('input');
@@ -159,30 +149,26 @@
                         }
                         const reader = new FileReader();
                         reader.onload = async function (e) {
-                            const base64Image = e.target.result.split(',')[1]; // Extract Base64 part
+                            const base64Image = e.target.result.split(',')[1];
                             try {
-                                // Crop the image to a square
                                 const img = new Image();
                                 img.src = e.target.result;
                                 img.onload = async function () {
                                     const canvas = document.createElement('canvas');
                                     const ctx = canvas.getContext('2d');
-                                    const size = Math.min(img.width, img.height); // Square size
+                                    const size = Math.min(img.width, img.height);
                                     canvas.width = size;
                                     canvas.height = size;
-                                    // Crop the image to a square
                                     const offsetX = (img.width - size) / 2;
                                     const offsetY = (img.height - size) / 2;
                                     ctx.drawImage(img, offsetX, offsetY, size, size, 0, 0, size, size);
-                                    // Resize the cropped image to 128x128
                                     const resizedCanvas = document.createElement('canvas');
                                     const resizedCtx = resizedCanvas.getContext('2d');
-                                    const maxSize = 128; // Set the maximum width/height for the avatar
+                                    const maxSize = 128;
                                     resizedCanvas.width = maxSize;
                                     resizedCanvas.height = maxSize;
                                     resizedCtx.drawImage(canvas, 0, 0, maxSize, maxSize);
 
-                                    // Crop the image to a circle
                                     const circleCanvas = document.createElement('canvas');
                                     const circleCtx = circleCanvas.getContext('2d');
                                     circleCanvas.width = maxSize;
@@ -196,7 +182,6 @@
                                     const circularBase64Image = circleCanvas.toDataURL('image/png');
                                     const finalBase64Image = circularBase64Image.split(',')[1];
 
-                                    // Update the Gist with the new profile picture
                                     const updateResponse = await fetch(userGist.url, {
                                         method: profilePicFileExists ? 'PATCH' : 'POST',
                                         headers: {
@@ -214,22 +199,18 @@
                                     if (!updateResponse.ok) {
                                         throw new Error('Ошибка при обновлении данных.');
                                     }
-                                    // Update the displayed avatar with the cropped and resized image
                                     userAvatar.src = circularBase64Image;
-                                    // Show success alert with Gist link
                                     const gistLink = userGist.html_url;
-                                    // alert(`Изображение успешно сохранено в Gist! Просмотреть можно по ссылке: ${gistLink}`);
                                 };
                             } catch (error) {
                                 alert(`Ошибка: ${error.message}`);
                             }
                         };
-                        reader.readAsDataURL(file); // Read the file as Base64
+                        reader.readAsDataURL(file);
                     };
-                    input.click(); // Trigger the file input dialog
+                    input.click();
                 });
 
-                // Display Activation Key (no manual input allowed)
                 const activationKeyField = document.getElementById('activationKeyField');
                 let userToken = userData.userToken || '';
                 userToken = userToken.trim();
@@ -241,18 +222,15 @@
                 } else {
                     activationKeyField.innerHTML = `<p>${userToken}</p>`;
                 }
-                // Add event listener for logout button
                 const logoutButton = document.getElementById('logoutButton');
                 logoutButton.addEventListener('click', function () {
-                    // Clear login status and user data
                     localStorage.removeItem('isLoggedIn');
                     localStorage.removeItem('userEmail');
-                    window.location.href = 'index.html'; // Redirect to homepage
+                    window.location.href = 'index.html';
                 });
-                // Add event listener for change password button
                 const changePasswordButton = document.getElementById('changePasswordButton');
                 changePasswordButton.addEventListener('click', function () {
-                    window.location.href = 'change_password.html'; // Redirect to change password page
+                    window.location.href = 'change_password.html';
                 });
             } catch (error) {
                 const mainContent = document.querySelector('main');

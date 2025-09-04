@@ -1,6 +1,6 @@
 @font-face {
-    font-family: 'Hweebaqs';
-    src: url('fonts/Hweebaqs.ttf') format('truetype');
+    font-family: 'MUNRO';
+    src: url('fonts/MUNRO.otf') format('truetype');
     font-weight: normal;
     font-style: normal;
 }
@@ -11,7 +11,7 @@
 
 /* Body Styling */
 body {
-    font-family: 'Hweebaqs', sans-serif;
+    font-family: 'MUNRO', sans-serif;
     /* Main font */
     font-size: 14px;
     margin: 0;
@@ -69,7 +69,7 @@ nav ul li {
 }
 
 nav ul li a {
-    font-family: 'Hweebaqs', sans-serif;
+    font-family: 'MUNRO', sans-serif;
     color: #fff;
     text-decoration: none;
     font-weight: bold;
@@ -101,7 +101,7 @@ main {
 }
 
 h1 {
-    font-family: 'Hweebaqs', sans-serif;
+    font-family: 'MUNRO', sans-serif;
     /* Title font */
     color: #e33533;
     font-size: 36px;
@@ -109,7 +109,7 @@ h1 {
 }
 
 h2 {
-    font-family: 'Hweebaqs', sans-serif;
+    font-family: 'MUNRO', sans-serif;
     /* Title font */
     color: #a0a0a0;
     font-size: 24px;

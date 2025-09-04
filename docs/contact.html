@@ -37,13 +37,14 @@
     <div class="separator"></div>
     <!-- Main Content -->
     <main>
-        <h1>EchoBreak</h1>
-        <h2>Обратная связь</h2>
+        <h1>Обратная связь</h1>
         <p>Пожалуйста, заполните форму ниже:</p>
         <form id="contact-form">
             <input type="hidden" name="time" value="Mar 24 2025 17:27">
             <label for="reason">Причина</label>
             <input type="text" id="reason" name="title" required>
+            <label for="email">Ваш email</label>
+            <input type="email" id="email" name="email">
             <label for="message">Сообщение</label>
             <textarea id="message" name="message" rows="4" required></textarea>
             <button type="submit" class="button">Отправить</button>
@@ -55,47 +56,55 @@
     </footer>
     <script>
         document.addEventListener('DOMContentLoaded', function () {
-            const isLoggedIn = localStorage.getItem('isLoggedIn');
-            if (!isLoggedIn || isLoggedIn !== 'true') {
-                const mainContent = document.querySelector('main');
-                mainContent.innerHTML = `
-                    <h2>Вы не вошли в аккаунт</h2>
-                    <button class="button" onclick="location.href='registration.html'">Войти</button>
-                `;
-                return;
-            }
 
             document.getElementById('contact-form').addEventListener('submit', function (event) {
                 event.preventDefault();
 
                 const lastSentTimestamp = localStorage.getItem('lastEmailSent');
                 const currentTime = Date.now();
-                const timeoutDuration = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
+                const timeoutDuration = 24 * 60 * 60 * 1000;
 
                 if (lastSentTimestamp && (currentTime - lastSentTimestamp < timeoutDuration)) {
-                    const remainingTime = Math.ceil((timeoutDuration - (currentTime - lastSentTimestamp)) / 1000 / 60);
-                    alert(`Вы уже отправили сообщение. Попробуйте снова через ${remainingTime} минут.`);
+                    const timeLeftMs = timeoutDuration - (currentTime - lastSentTimestamp);
+                    const hours = Math.floor(timeLeftMs / (1000 * 60 * 60));
+                    const minutes = Math.ceil((timeLeftMs / (1000 * 60)) % 60);
+                    alert(`Вы уже отправили сообщение. Попробуйте снова через ${hours} ч. ${minutes} мин.`);
                     return;
                 }
 
-                const userEmail = localStorage.getItem('userEmail') || 'no_email@example.com';
                 const formData = new FormData(this);
+                const userEmail = formData.get('email');
+                const reason = formData.get('title');
+                const message = formData.get('message');
+                const time = formData.get('time');
+
+                // Проверка email
+                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                if (!emailRegex.test(userEmail)) {
+                    alert('Пожалуйста, введите корректный email.');
+                    return;
+                }
 
                 const emailData = {
-                    name: userEmail,
-                    title: formData.get('title'),
-                    message: formData.get('message'),
-                    time: formData.get('time'),
-                    email: 'andyspacex10@gmail.com'
+                    name: "Пользователь EchoBreak " + userEmail,
+                    from: userEmail,
+                    reply: userEmail,
+                    to_name: "EchoBreak Team",
+                    email: "andyspacex10@gmail.com",
+                    title: reason,
+                    message: message,
+                    time: time
                 };
 
                 emailjs.send('service_w40idmf', 'template_uvt4lc7', emailData)
                     .then(() => {
                         alert('Сообщение успешно отправлено!');
-                        localStorage.setItem('lastEmailSent', currentTime); // Update the timestamp
-                    }, (error) => {
+                        localStorage.setItem('lastEmailSent', currentTime);
+                        document.getElementById('contact-form').reset();
+                    })
+                    .catch((error) => {
                         console.error('Ошибка отправки:', error);
-                        alert('Произошла ошибка при отправке сообщения.');
+                        alert('Произошла ошибка при отправке сообщения. Попробуйте позже.');
                     });
             });
         });
