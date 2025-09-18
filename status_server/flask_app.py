@@ -25,7 +25,6 @@ def after_request(response):
 # Path to JSON "database"
 DATA_FILE = 'computers.json'
 
-# Initialize data file if not exists
 if not os.path.exists(DATA_FILE):
     with open(DATA_FILE, 'w') as f:
         json.dump({}, f)
@@ -38,7 +37,6 @@ def save_data(data):
     with open(DATA_FILE, 'w') as f:
         json.dump(data, f, indent=2)
 
-# --- API Endpoint ---
 @app.route('/api/status', methods=['POST'])
 def update_status():
     """
@@ -58,11 +56,9 @@ def update_status():
         hostname = data['hostname']
         current_data = load_data()
 
-        # Auto-fill last_seen if not provided
         if 'last_seen' not in data:
             data['last_seen'] = datetime.datetime.now().isoformat()
 
-        # Update or add computer
         current_data[hostname] = data
         save_data(current_data)
 
@@ -71,7 +67,6 @@ def update_status():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-# --- Frontend Dashboard ---
 @app.route('/')
 def dashboard():
     try:
@@ -138,7 +133,6 @@ def get_all_status():
         now = datetime.datetime.now()
         STALE_THRESHOLD = datetime.timedelta(minutes=11)
 
-        # Auto-mark as offline if not seen recently
         for hostname, data in computers.items():
             if 'last_seen' in data:
                 last_seen = datetime.datetime.fromisoformat(data['last_seen'])

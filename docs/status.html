@@ -59,9 +59,8 @@
   </footer>
 
   <script>
-    // ⚠️ REPLACE WITH YOUR PYTHONANYWHERE URL
-    const SERVER_URL = 'http://EchoBreakStatus.pythonanywhere.com/api/status';
-    const REFRESH_INTERVAL = 30000; // 30 seconds
+    const SERVER_URL = 'https://EchoBreakStatus.pythonanywhere.com/api/status';
+    const REFRESH_INTERVAL = 30000;
 
     const dashboard = document.getElementById('dashboard');
     const refreshTimeEl = document.getElementById('refresh-time');
@@ -77,7 +76,7 @@
         refreshTimeEl.textContent = 'Последнее обновление: ' + new Date().toLocaleString('ru-RU');
       } catch (error) {
         console.error('Ошибка:', error);
-        dashboard.innerHTML = `<p class="status-error">❌ Ошибка загрузки: ${error.message}</p>`;
+        dashboard.innerHTML = `<p class="status-error">Ошибка загрузки: ${error.message}</p>`;
       }
     }
 
@@ -107,10 +106,8 @@
       dashboard.innerHTML = content;
     }
 
-    // Initial load
     fetchStatus();
 
-    // Auto-refresh
     setInterval(fetchStatus, REFRESH_INTERVAL);
   </script>
 </body>
