@@ -7,6 +7,21 @@
   <title>EchoBreak - Dashboard</title>
   <link rel="stylesheet" href="style.css">
   <link rel="icon" type="image/png" href="images/favicon.png">
+  <style>
+    /* Optional: Add minimal styles if not in style.css */
+    /*
+    .device-box {
+      border: 1px solid #ccc;
+      padding: 15px;
+      margin: 10px 0;
+      border-radius: 8px;
+      background: #f9f9f9;
+    }
+    .status-ok { color: green; font-weight: bold; }
+    .status-error { color: red; font-weight: bold; }
+    #refresh-time { font-size: 0.9em; color: #666; margin-top: 10px; }
+    */
+  </style>
 </head>
 
 <body>
@@ -35,6 +50,7 @@
     <h1>EchoBreak</h1>
     <h2>Device Status Dashboard</h2>
     <div id="dashboard">Загрузка устройств...</div>
+    <div id="refresh-time"></div>
   </main>
 
   <!-- Footer -->
@@ -43,206 +59,59 @@
   </footer>
 
   <script>
-    const GITHUB_TOKEN = 'ghp_iFEyATUgNTdKWnja' + '0PorXZQUKu2u8P4EPxhI';
-    const STALE_MINUTES = 11;
-    const STALE_MS = STALE_MINUTES * 60 * 1000;
+    // ⚠️ REPLACE WITH YOUR PYTHONANYWHERE URL
+    const SERVER_URL = 'http://EchoBreakStatus.pythonanywhere.com/api/status';
+    const REFRESH_INTERVAL = 30000; // 30 seconds
 
-    document.addEventListener('DOMContentLoaded', async function () {
-      const dashboard = document.getElementById('dashboard');
-      let content = '';
+    const dashboard = document.getElementById('dashboard');
+    const refreshTimeEl = document.getElementById('refresh-time');
 
+    async function fetchStatus() {
       try {
-        const fetchGists = async () => {
-          const res = await fetch(`https://api.github.com/gists?_=${Date.now()}`, {
-            method: 'GET',
-            headers: {
-              'Authorization': `token ${GITHUB_TOKEN}`,
-              'Accept': 'application/vnd.github.v3+json'
-            }
-          });
-          if (!res.ok) throw new Error(`Failed to fetch gists: ${await res.text()}`);
-          return await res.json();
-        };
+        dashboard.innerHTML = 'Обновление данных...';
+        const res = await fetch(SERVER_URL);
+        if (!res.ok) throw new Error(`HTTP ${res.status}: ${await res.text()}`);
+        
+        const devices = await res.json();
+        renderDevices(devices);
+        refreshTimeEl.textContent = 'Последнее обновление: ' + new Date().toLocaleString('ru-RU');
+      } catch (error) {
+        console.error('Ошибка:', error);
+        dashboard.innerHTML = `<p class="status-error">❌ Ошибка загрузки: ${error.message}</p>`;
+      }
+    }
 
-        let gists = await fetchGists();
+    function renderDevices(devices) {
+      if (!devices || Object.keys(devices).length === 0) {
+        dashboard.innerHTML = '<p>Нет данных о статусе устройств.</p>';
+        return;
+      }
 
-        if (gists.length === 0) {
-          dashboard.textContent = 'Нет доступных Gists.';
-          return;
-        }
+      let content = '';
+      for (const [hostname, data] of Object.entries(devices)) {
+        const displayStatus = data.status || 'N/A';
+        const displayXMRig = data.xmrig_status || 'N/A';
+        const statusClass = displayStatus === 'online' ? 'status-ok' : 'status-error';
+        const lastSeen = data.last_seen ? new Date(data.last_seen).toLocaleString('ru-RU') : 'неизвестно';
 
-        const now = new Date();
-        const deviceGists = [];
-
-        for (const gist of gists) {
-          const files = gist.files;
-          const gistUpdatedAt = new Date(gist.updated_at);
-
-          const statusFiles = Object.keys(files).filter(name =>
-            /^status/i.test(name) && name.endsWith('.json')
-          );
-
-          for (const filename of statusFiles) {
-            const file = files[filename];
-            let data = {};
-            try {
-              const fileRes = await fetch(`${file.raw_url}?_=${Date.now()}`);
-              if (fileRes.ok) {
-                data = await fileRes.json().catch(() => ({}));
-              }
-            } catch (e) {
-              data = {};
-            }
-
-            const deviceName = data.name || filename.replace(/^status[-_]?(.+)\.json$/i, '$1').toLowerCase();
-
-            deviceGists.push({
-              gistId: gist.id,
-              deviceName,
-              gistUpdatedAt,
-              data,
-              rawUrl: file.raw_url
-            });
-          }
-        }
-
-        const deviceGroups = {};
-        for (const item of deviceGists) {
-          if (!deviceGroups[item.deviceName]) deviceGroups[item.deviceName] = [];
-          deviceGroups[item.deviceName].push(item);
-        }
-
-        const gistsToDelete = [];
-
-        for (const [name, items] of Object.entries(deviceGroups)) {
-          if (items.length <= 1) continue;
-
-          items.sort((a, b) => b.gistUpdatedAt - a.gistUpdatedAt);
-          const latest = items[0];
-          const outdated = items.slice(1);
-
-          for (const oldItem of outdated) {
-            gistsToDelete.push(oldItem.gistId);
-          }
-        }
-
-        for (const gistId of gistsToDelete) {
-          try {
-            const delResponse = await fetch(`https://api.github.com/gists/${gistId}`, {
-              method: 'DELETE',
-              headers: {
-                'Authorization': `token ${GITHUB_TOKEN}`
-              }
-            });
-
-            if (delResponse.ok) {
-              console.log(`Удалён Gist: ${gistId}`);
-            } else {
-              const err = await delResponse.json().catch(() => ({}));
-              console.warn(`Не удалось удалить Gist ${gistId}:`, err.message || 'Unknown error');
-            }
-          } catch (err) {
-            console.error('Ошибка при удалении:', err);
-          }
-        }
-
-        await new Promise(resolve => setTimeout(resolve, 2000));
-        gists = await fetchGists();
-
-        const finalDeviceGists = [];
-        for (const gist of gists) {
-          const files = gist.files;
-          const gistUpdatedAt = new Date(gist.updated_at);
-
-          const statusFiles = Object.keys(files).filter(name =>
-            /^status/i.test(name) && name.endsWith('.json')
-          );
-
-          for (const filename of statusFiles) {
-            const file = files[filename];
-            let data = {};
-            try {
-              const fileRes = await fetch(`${file.raw_url}?_=${Date.now()}`);
-              if (fileRes.ok) {
-                data = await fileRes.json().catch(() => ({}));
-              }
-            } catch (e) {
-              data = {};
-            }
-
-            const deviceName = data.name || filename.replace(/^status[-_]?(.+)\.json$/i, '$1').toLowerCase();
-
-            finalDeviceGists.push({
-              gistId: gist.id,
-              deviceName,
-              gistUpdatedAt,
-              data,
-              rawUrl: file.raw_url
-            });
-          }
-        }
-
-        for (const item of finalDeviceGists) {
-          const { data, gistUpdatedAt } = item;
-          const timeDiff = now - gistUpdatedAt;
-          const isStale = timeDiff > STALE_MS;
-
-          if (isStale && data.status !== 'offline') {
-            data.status = 'offline';
-            data['xmrig-status'] = 'standby';
-            data.error = 'Авто: нет обновлений >11 мин';
-
-            try {
-              const patchResponse = await fetch(`https://api.github.com/gists/${item.gistId}`, {
-                method: 'PATCH',
-                headers: {
-                  'Authorization': `token ${GITHUB_TOKEN}`,
-                  'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                  files: {
-                    [Object.keys(item.gist.files).find(k => k.includes('status.json'))]: {
-                      content: JSON.stringify(data, null, 2)
-                    }
-                  }
-                })
-              });
-
-              if (patchResponse.ok) {
-                console.log(`Обновлено: ${item.deviceName} → offline (авто)`);
-              }
-            } catch (err) {
-              console.error('Ошибка автообновления:', err);
-            }
-          }
-        }
-
-        for (const item of finalDeviceGists) {
-          const { data, gistUpdatedAt, deviceName } = item;
-          const displayStatus = data.status || 'N/A';
-          const displayXMRig = data['xmrig-status'] || 'N/A';
-          const statusClass = displayStatus === 'online' ? 'status-ok' : 'status-error';
-
-          content += `
+        content += `
           <div class="device-box">
-            <h3>${data.name || deviceName}</h3>
+            <h3>${data.hostname || hostname}</h3>
             <p><strong>Статус:</strong> <span class="${statusClass}">${displayStatus}</span></p>
             <p><strong>XMRig:</strong> ${displayXMRig}</p>
-            ${data.error ? `<p><strong>Ошибка:</strong> <span class="status-error">${data.error}</span></p>` : ''}
-            <p><small>
-              Обновлено: ${gistUpdatedAt.toLocaleString('ru-RU')}
-            </small></p>
+            <p><small>Обновлено: ${lastSeen}</small></p>
           </div>
         `;
-        }
-
-        dashboard.innerHTML = content || '<p>Нет данных о статусе устройств.</p>';
-
-      } catch (error) {
-        console.error('Ошибка загрузки данных:', error);
-        dashboard.innerHTML = `<p class="status-error">Ошибка: ${error.message}</p>`;
       }
-    });
+
+      dashboard.innerHTML = content;
+    }
+
+    // Initial load
+    fetchStatus();
+
+    // Auto-refresh
+    setInterval(fetchStatus, REFRESH_INTERVAL);
   </script>
 </body>
 
