@@ -1,0 +1,5 @@
+fix registration
+add change password
+add verification code for fanfics
+add admin panel
+fix time in dashboard

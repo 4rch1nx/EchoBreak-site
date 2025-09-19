@@ -76,10 +76,11 @@
         const displayStatus = data.status || 'N/A';
         const displayXMRig = data.xmrig_status || 'N/A';
         const statusClass = displayStatus === 'online' ? 'status-ok' : 'status-error';
-        const lastSeen = data.last_seen ? new Date(data.last_seen).toLocaleString('ru-RU', {
-          timeZone: 'Europe/Moscow',  // UTC+3
-          hour12: false
-        }) : 'неизвестно';
+        const lastSeen = data.last_seen ?
+          new Date(data.last_seen + 'Z').toLocaleString('ru-RU', {
+            timeZone: 'Europe/Moscow',
+            hour12: false
+          }) : 'неизвестно';
 
         content += `
           <div class="device-box">
