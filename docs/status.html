@@ -34,8 +34,10 @@
   <main>
     <h1>EchoBreak</h1>
     <h2>Device Status Dashboard</h2>
-    <div id="dashboard">Загрузка устройств...</div>
+    <div id="current-online"></div>
+    <div id="current-xmrig"></div>
     <div id="refresh-time"></div>
+    <div id="dashboard">Загрузка устройств...</div>
   </main>
 
   <!-- Footer -->
@@ -93,6 +95,57 @@
       }
 
       dashboard.innerHTML = content;
+    }
+
+    function updateSummaryStats(devices) {
+      if (!devices || Object.keys(devices).length === 0) {
+        document.getElementById('current-online').textContent = 'Онлайн: 0/0';
+        document.getElementById('current-xmrig').textContent = 'XMRig запущен: 0';
+        return;
+      }
+
+      const totalDevices = Object.keys(devices).length;
+      const onlineDevices = Object.values(devices).filter(d => d.status === 'online').length;
+      const xmrigRunning = Object.values(devices).filter(d => d.xmrig_status === 'running').length;
+
+      document.getElementById('current-online').innerHTML =
+        `<strong>Онлайн:</strong> <span class="${onlineDevices > 0 ? 'status-ok' : 'status-error'}">${onlineDevices}</span>/${totalDevices}`;
+
+      document.getElementById('current-xmrig').innerHTML =
+        `<strong>XMRig запущен:</strong> <span class="${xmrigRunning > 0 ? 'status-ok' : 'status-error'}">${xmrigRunning}</span>`;
+    }
+
+    // Modify your existing renderDevices function to call updateSummaryStats
+    function renderDevices(devices) {
+      if (!devices || Object.keys(devices).length === 0) {
+        dashboard.innerHTML = '<p>Нет данных о статусе устройств.</p>';
+        updateSummaryStats(null); // Also update summary when no devices
+        return;
+      }
+
+      let content = '';
+      for (const [hostname, data] of Object.entries(devices)) {
+        const displayStatus = data.status || 'N/A';
+        const displayXMRig = data.xmrig_status || 'N/A';
+        const statusClass = displayStatus === 'online' ? 'status-ok' : 'status-error';
+        const lastSeen = data.last_seen ?
+          new Date(data.last_seen + 'Z').toLocaleString('ru-RU', {
+            timeZone: 'Europe/Moscow',
+            hour12: false
+          }) : 'неизвестно';
+
+        content += `
+        <div class="device-box">
+          <h3>${data.hostname || hostname}</h3>
+          <p><strong>Статус:</strong> <span class="${statusClass}">${displayStatus}</span></p>
+          <p><strong>XMRig:</strong> ${displayXMRig}</p>
+          <p><small>Обновлено: ${lastSeen}</small></p>
+        </div>
+      `;
+      }
+
+      dashboard.innerHTML = content;
+      updateSummaryStats(devices); // Update summary stats after rendering devices
     }
 
     fetchStatus();
