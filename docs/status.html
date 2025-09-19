@@ -75,6 +75,7 @@
 
       let content = '';
       for (const [hostname, data] of Object.entries(devices)) {
+        console.log(data);
         const displayStatus = data.status || 'N/A';
         const displayXMRig = data.xmrig-status;
         const statusClass = displayStatus === 'online' ? 'status-ok' : 'status-error';
