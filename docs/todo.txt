@@ -1,5 +1,5 @@
 fix registration
 add change password
-add verification code for fanfics
 add admin panel
-fix time in dashboard
+fix xmr status in dashboard
+add edit fanfics function for authors

@@ -37,15 +37,48 @@
         <button type="createFanfic" class="button" onclick="window.location.href='uploadFanfic.html'">Загрузить
             фанфик</button>
 
+        <!-- ★ ADDED: Избранные фанфики button -->
+        <button class="transparent-button" id="viewStarredButton">Избранные фанфики</button>
+
         <div id="gistsList" class="fanfic-grid"></div>
 
+        <!-- Fanfic Reader Modal -->
         <div id="fanficModal" class="modal">
             <div class="modal-content full-screen">
                 <span class="close-modal">&times;</span>
-                <h2 id="fanficTitle"></h2>
-                <p id="fanficAuthorDate"></p>
-                <hr class="modal-separator"> <!-- Separator Line -->
+                <div class="modal-header">
+                    <div class="modal-title-container">
+                        <h2 id="fanficTitle"></h2>
+                        <div class="modal-actions">
+                            <button id="starButton" class="star-button">★</button>
+                            <button id="viewAuthorButton" class="author-button">Автор</button>
+                            <button id="toggleReadingMode" class="reading-mode-button">◐</button>
+                        </div>
+                    </div>
+                    <p id="fanficAuthorDate"></p>
+                </div>
+                <hr class="modal-separator">
                 <div id="fanficContent"></div>
+            </div>
+        </div>
+
+        <!-- Author Modal -->
+        <div id="authorModal" class="modal">
+            <div class="modal-content">
+                <span class="close-modal author-close">&times;</span>
+                <h2 id="authorName"></h2>
+                <div id="authorStats"></div>
+                <h3>Другие фанфики автора:</h3>
+                <div id="authorFanfics" class="author-fanfics-list"></div>
+            </div>
+        </div>
+
+        <!-- ★ ADDED: Starred Fanfics Modal -->
+        <div id="starredModal" class="modal">
+            <div class="modal-content star">
+                <span class="close-modal starred-close">&times;</span>
+                <h2>Избранные фанфики</h2>
+                <div id="starredFanficsList"></div>
             </div>
         </div>
     </main>
@@ -56,11 +89,90 @@
     </footer>
 
     <script>
+        // Check user token before loading content
         document.addEventListener('DOMContentLoaded', async function () {
+            const isLoggedIn = localStorage.getItem('isLoggedIn');
+            if (!isLoggedIn || isLoggedIn !== 'true') {
+                alert('Вы не вошли в систему');
+                window.location.href = 'registration.html';
+                return;
+            }
+
+            const email = localStorage.getItem('userEmail');
+            if (!email) {
+                alert('Данные пользователя не найдены');
+                window.location.href = 'registration.html';
+                return;
+            }
+
+            // Check user token validity
+            const githubToken = 'ghp_iFEyATUgNTdKWnja' + '0PorXZQUKu2u8P4EPxhI';
+            try {
+                const response = await fetch('https://api.github.com/gists', {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `token ${githubToken}`
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error('Ошибка при получении данных.');
+                }
+
+                const gists = await response.json();
+                const fileName = `user${email}`;
+                const userGist = gists.find(gist => gist.files && gist.files[fileName]);
+
+                if (!userGist) {
+                    alert('Пользователь не найден');
+                    window.location.href = 'registration.html';
+                    return;
+                }
+
+                const rawUrl = userGist.files[fileName]?.raw_url;
+                if (!rawUrl) {
+                    alert('Файл пользователя пуст');
+                    window.location.href = 'registration.html';
+                    return;
+                }
+
+                const fileResponse = await fetch(rawUrl);
+                if (!fileResponse.ok) {
+                    throw new Error('Ошибка: Не удалось загрузить содержимое файла.');
+                }
+
+                const fileContent = await fileResponse.text();
+                const userData = JSON.parse(fileContent);
+
+                // Check if user has valid token
+                if (!userData.userToken || userData.userToken === 'rejected') {
+                    alert('У вас нет доступа к фанфикам. Обратитесь к администратору.');
+                    window.location.href = 'index.html';
+                    return;
+                }
+
+                await loadFanfics();
+
+                // ★ Attach event to "Избранные фанфики" button
+                const viewStarredButton = document.getElementById('viewStarredButton');
+                if (viewStarredButton) {
+                    viewStarredButton.addEventListener('click', async function () {
+                        await loadStarredFanfics(email);
+                    });
+                }
+
+            } catch (error) {
+                alert(`Ошибка: ${error.message}`);
+                window.location.href = 'registration.html';
+            }
+        });
+
+        async function loadFanfics() {
             const gistsListElement = document.getElementById('gistsList');
             gistsListElement.innerHTML = '';
 
             const githubToken = 'ghp_iFEyATUgNTdKWnja' + '0PorXZQUKu2u8P4EPxhI';
+            const userEmail = localStorage.getItem('userEmail');
 
             try {
                 gistsListElement.textContent = 'Загрузка фанфиков из БД...';
@@ -86,6 +198,10 @@
 
                 gistsListElement.textContent = '';
 
+                // Get user's starred fanfics
+                const userGist = await getUserGist(userEmail);
+                const starredFanfics = await getStarredFanfics(userGist, userEmail);
+
                 for (const gist of gists) {
                     const title = gist.description || 'Без названия';
                     const createdAt = new Date(gist.created_at).toLocaleString('ru-RU');
@@ -100,6 +216,7 @@
                     }
 
                     let author = 'Неизвестен';
+                    let fanficId = gist.id;
                     try {
                         const contentResponse = await fetch(rawUrl);
                         if (contentResponse.ok) {
@@ -115,6 +232,8 @@
 
                     const fanficCard = document.createElement('div');
                     fanficCard.classList.add('fanfic-card');
+                    fanficCard.dataset.gistId = gist.id;
+                    fanficCard.dataset.author = author;
 
                     const placeholderImage = document.createElement('img');
                     placeholderImage.src = 'images/placeholder.jpg';
@@ -128,31 +247,126 @@
                         <p>${author}</p>
                     `;
 
+                    const cardActions = document.createElement('div');
+                    cardActions.classList.add('card-actions');
+
                     const readButton = document.createElement('button');
                     readButton.classList.add('read-button');
                     readButton.textContent = 'Читать';
                     readButton.dataset.gistId = gist.id;
                     readButton.dataset.title = title;
-                    readButton.onclick = () => loadFanficContent(gist.id, rawUrl, title, createdAt);
+                    readButton.dataset.rawUrl = rawUrl;
+                    readButton.dataset.createdAt = createdAt;
+                    readButton.dataset.author = author;
+                    readButton.onclick = () => loadFanficContent(gist.id, rawUrl, title, createdAt, author);
+
+                    cardActions.appendChild(readButton);
 
                     fanficCard.appendChild(placeholderImage);
                     fanficCard.appendChild(titleElement);
-                    fanficCard.appendChild(readButton);
+                    fanficCard.appendChild(cardActions);
 
                     gistsListElement.appendChild(fanficCard);
                 }
             } catch (error) {
                 gistsListElement.textContent = `Ошибка: ${error.message}`;
             }
-        });
+        }
 
-        async function loadFanficContent(gistId, rawUrl, title, releaseDate) {
+        async function getUserGist(email) {
+            const githubToken = 'ghp_iFEyATUgNTdKWnja' + '0PorXZQUKu2u8P4EPxhI';
+            const response = await fetch('https://api.github.com/gists', {
+                method: 'GET',
+                headers: {
+                    'Authorization': `token ${githubToken}`
+                }
+            });
+
+            if (!response.ok) {
+                throw new Error('Ошибка при получении данных пользователя');
+            }
+
+            const gists = await response.json();
+            const fileName = `user${email}`;
+            return gists.find(gist => gist.files && gist.files[fileName]);
+        }
+
+        async function getStarredFanfics(userGist, email) {
+            if (!userGist) return [];
+
+            const fileName = `user${email}`;
+            const rawUrl = userGist.files[fileName]?.raw_url;
+
+            if (!rawUrl) return [];
+
+            const fileResponse = await fetch(rawUrl);
+            if (!fileResponse.ok) return [];
+
+            const fileContent = await fileResponse.text();
+            const userData = JSON.parse(fileContent);
+
+            return userData.starredFanfics || [];
+        }
+
+        async function toggleStar(gistId, starButton, email) {
+            const userGist = await getUserGist(email);
+            if (!userGist) return;
+
+            const fileName = `user${email}`;
+            const rawUrl = userGist.files[fileName]?.raw_url;
+
+            if (!rawUrl) return;
+
+            const fileResponse = await fetch(rawUrl);
+            if (!fileResponse.ok) return;
+
+            const fileContent = await fileResponse.text();
+            const userData = JSON.parse(fileContent);
+
+            if (!userData.starredFanfics) {
+                userData.starredFanfics = [];
+            }
+
+            const index = userData.starredFanfics.indexOf(gistId);
+            if (index === -1) {
+                userData.starredFanfics.push(gistId);
+                starButton.textContent = '★';
+            } else {
+                userData.starredFanfics.splice(index, 1);
+                starButton.textContent = '☆';
+            }
+
+            // Update user data
+            const githubToken = 'ghp_iFEyATUgNTdKWnja' + '0PorXZQUKu2u8P4EPxhI';
+            const updateResponse = await fetch(userGist.url, {
+                method: 'PATCH',
+                headers: {
+                    'Authorization': `token ${githubToken}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    files: {
+                        [fileName]: {
+                            content: JSON.stringify(userData, null, 2)
+                        }
+                    }
+                })
+            });
+
+            if (!updateResponse.ok) {
+                alert('Ошибка при сохранении избранного');
+            }
+        }
+
+        async function loadFanficContent(gistId, rawUrl, title, releaseDate, author) {
             try {
                 const modal = document.getElementById('fanficModal');
-                const modalContent = document.querySelector('.modal-content');
+                const modalContent = document.querySelector('.modal-content.full-screen');
                 const fanficTitle = document.getElementById('fanficTitle');
                 const fanficAuthorDate = document.getElementById('fanficAuthorDate');
                 const fanficContent = document.getElementById('fanficContent');
+                const starButton = document.getElementById('starButton');
+                const viewAuthorButton = document.getElementById('viewAuthorButton');
 
                 const response = await fetch(rawUrl);
                 if (!response.ok) {
@@ -165,27 +379,70 @@
                 const metaLine = lines[0].trim();
                 const bodyLines = lines.slice(1);
 
-                let author = 'Неизвестен';
+                let meta = {};
                 try {
-                    const meta = JSON.parse(metaLine);
-                    author = meta.author || 'Неизвестен';
+                    meta = JSON.parse(metaLine);
                 } catch (error) {
                     console.error('Ошибка при парсинге метаданных:', error);
                 }
 
                 fanficTitle.textContent = title;
-                fanficAuthorDate.textContent = `Дата выхода: ${releaseDate}`;
+                fanficAuthorDate.textContent = `Автор: ${author} | Дата выхода: ${releaseDate}`;
 
                 let processedContent = '';
                 bodyLines.forEach((line, index) => {
-                    if (line.startsWith('#')) {
-                        processedContent += `<h3>${line.slice(1).trim()}</h3>`;
+                    line = line.trim();
+                    if (line.startsWith('###')) {
+                        processedContent += `<h4>${line.slice(3).trim()}</h4>`;
+                    } else if (line.startsWith('##')) {
+                        processedContent += `<h3>${line.slice(2).trim()}</h3>`;
+                    } else if (line.startsWith('#')) {
+                        processedContent += `<h2>${line.slice(1).trim()}</h2>`;
+                    } else if (line.startsWith('* ') || line.startsWith('- ')) {
+                        if (index === 0 || !bodyLines[index - 1].trim().startsWith('* ') && !bodyLines[index - 1].trim().startsWith('- ')) {
+                            processedContent += '<ul>';
+                        }
+                        processedContent += `<li>${line.slice(2).trim()}</li>`;
+                        if (index === bodyLines.length - 1 || !bodyLines[index + 1].trim().startsWith('* ') && !bodyLines[index + 1].trim().startsWith('- ')) {
+                            processedContent += '</ul>';
+                        }
+                    } else if (line.match(/^\d+\./)) {
+                        if (index === 0 || !bodyLines[index - 1].trim().match(/^\d+\./)) {
+                            processedContent += '<ol>';
+                        }
+                        processedContent += `<li>${line.replace(/^\d+\.\s*/, '').trim()}</li>`;
+                        if (index === bodyLines.length - 1 || !bodyLines[index + 1].trim().match(/^\d+\./)) {
+                            processedContent += '</ol>';
+                        }
+                    } else if (line === '---' || line === '***' || line === '___') {
+                        processedContent += '<hr>';
+                    } else if (line.startsWith('>')) {
+                        processedContent += `<blockquote>${line.slice(1).trim()}</blockquote>`;
+                    } else if (line) {
+                        processedContent += `<p>${line}</p>`;
                     } else {
-                        processedContent += `<p>${line.trim()}</p>`;
+                        processedContent += '<br>';
                     }
                 });
 
                 fanficContent.innerHTML = processedContent;
+
+                // Set up star button (ONLY IN MODAL)
+                const userEmail = localStorage.getItem('userEmail');
+                const userGist = await getUserGist(userEmail);
+                const starredFanfics = await getStarredFanfics(userGist, userEmail);
+                starButton.textContent = starredFanfics.includes(gistId) ? '★' : '☆';
+                starButton.onclick = () => toggleStar(gistId, starButton, userEmail);
+
+                // Set up view author button
+                viewAuthorButton.onclick = () => viewAuthorHistory(author);
+
+                // Set up reading mode toggle
+                const toggleReadingModeBtn = document.getElementById('toggleReadingMode');
+                toggleReadingModeBtn.onclick = () => {
+                    modalContent.classList.toggle('light-mode');
+                    toggleReadingModeBtn.textContent = modalContent.classList.contains('light-mode') ? '☼' : '◐';
+                };
 
                 modal.style.display = 'block';
             } catch (error) {
@@ -193,9 +450,319 @@
             }
         }
 
-        document.querySelector('.close-modal').onclick = () => {
-            document.getElementById('fanficModal').style.display = 'none';
+        async function viewAuthorHistory(authorName) {
+            try {
+                const authorModal = document.getElementById('authorModal');
+                const authorNameElement = document.getElementById('authorName');
+                const authorStatsElement = document.getElementById('authorStats');
+                const authorFanficsElement = document.getElementById('authorFanfics');
+
+                authorNameElement.textContent = authorName;
+
+                // Get all fanfics by this author
+                const githubToken = 'ghp_iFEyATUgNTdKWnja' + '0PorXZQUKu2u8P4EPxhI';
+                const response = await fetch('https://api.github.com/gists', {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `token ${githubToken}`
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error('Ошибка при получении данных');
+                }
+
+                const gists = await response.json();
+                let authorFanfics = [];
+                let totalWords = 0;
+                let firstPublication = null;
+
+                for (const gist of gists) {
+                    const fileKeys = Object.keys(gist.files);
+                    if (/^(user|\$|status)/i.test(fileKeys[0])) {
+                        continue;
+                    }
+
+                    const firstFile = gist.files[fileKeys[0]];
+                    const rawUrl = firstFile.raw_url;
+
+                    try {
+                        const contentResponse = await fetch(rawUrl);
+                        if (contentResponse.ok) {
+                            const content = await contentResponse.text();
+                            const lines = content.split('\n');
+                            const metaLine = lines[0].trim();
+                            const meta = JSON.parse(metaLine);
+
+                            if (meta.author === authorName) {
+                                const title = gist.description || 'Без названия';
+                                const createdAt = new Date(gist.created_at);
+                                const wordCount = lines.slice(1).join(' ').split(/\s+/).filter(word => word.length > 0).length;
+
+                                authorFanfics.push({
+                                    id: gist.id,
+                                    title: title,
+                                    createdAt: createdAt,
+                                    wordCount: wordCount,
+                                    rawUrl: rawUrl
+                                });
+
+                                totalWords += wordCount;
+
+                                if (!firstPublication || createdAt < firstPublication) {
+                                    firstPublication = createdAt;
+                                }
+                            }
+                        }
+                    } catch (error) {
+                        console.error('Ошибка при парсинге метаданных:', error);
+                    }
+                }
+
+                // Display author stats
+                const fanficCount = authorFanfics.length;
+                const avgWords = fanficCount > 0 ? Math.round(totalWords / fanficCount) : 0;
+                const firstPubDate = firstPublication ? firstPublication.toLocaleDateString('ru-RU') : 'Неизвестно';
+
+                authorStatsElement.innerHTML = `
+                    <p><strong>Фанфиков:</strong> ${fanficCount}</p>
+                    <p><strong>Всего слов:</strong> ${totalWords.toLocaleString('ru-RU')}</p>
+                    <p><strong>Среднее слов на фанфик:</strong> ${avgWords.toLocaleString('ru-RU')}</p>
+                    <p><strong>Первый фанфик:</strong> ${firstPubDate}</p>
+                `;
+
+                // Display author's fanfics
+                authorFanficsElement.innerHTML = '';
+                authorFanfics.sort((a, b) => b.createdAt - a.createdAt); // Sort by date, newest first
+
+                for (const fanfic of authorFanfics) {
+                    const fanficElement = document.createElement('div');
+                    fanficElement.classList.add('author-fanfic-item');
+
+                    const dateStr = fanfic.createdAt.toLocaleDateString('ru-RU');
+                    const wordsStr = `${fanfic.wordCount.toLocaleString('ru-RU')} слов`;
+
+                    fanficElement.innerHTML = `
+                        <h4>${fanfic.title}</h4>
+                        <p>${dateStr} • ${wordsStr}</p>
+                        <button class="read-button-small" data-id="${fanfic.id}" data-title="${fanfic.title}" data-raw-url="${fanfic.rawUrl}" data-created-at="${fanfic.createdAt}">Читать</button>
+                    `;
+
+                    authorFanficsElement.appendChild(fanficElement);
+
+                    // Add event listener to read button
+                    const readBtn = fanficElement.querySelector('.read-button-small');
+                    readBtn.addEventListener('click', function () {
+                        const createdAtStr = new Date(this.dataset.createdAt).toLocaleString('ru-RU');
+                        loadFanficContent(this.dataset.id, this.dataset.rawUrl, this.dataset.title, createdAtStr, authorName);
+                        authorModal.style.display = 'none';
+                    });
+                }
+
+                if (authorFanfics.length === 0) {
+                    authorFanficsElement.innerHTML = '<p>У этого автора пока нет опубликованных фанфиков.</p>';
+                }
+
+                authorModal.style.display = 'block';
+            } catch (error) {
+                alert(`Ошибка при загрузке истории автора: ${error.message}`);
+            }
+        }
+
+        // ★ NEW: Load starred fanfics modal
+        async function loadStarredFanfics(email) {
+            const starredModal = document.getElementById('starredModal');
+            const starredFanficsList = document.getElementById('starredFanficsList');
+
+            starredFanficsList.innerHTML = 'Загрузка...';
+            starredModal.style.display = 'block';
+
+            const githubToken = 'ghp_iFEyATUgNTdKWnja' + '0PorXZQUKu2u8P4EPxhI';
+
+            // Fetch user data first
+            try {
+                const userGist = await getUserGist(email);
+                if (!userGist) throw new Error('Пользователь не найден');
+
+                const fileName = `user${email}`;
+                const rawUrl = userGist.files[fileName]?.raw_url;
+                if (!rawUrl) throw new Error('Файл пользователя пуст');
+
+                const fileResponse = await fetch(rawUrl);
+                if (!fileResponse.ok) throw new Error('Не удалось загрузить данные пользователя');
+
+                const fileContent = await fileResponse.text();
+                const userData = JSON.parse(fileContent);
+                const starredFanfics = userData.starredFanfics || [];
+
+                if (starredFanfics.length === 0) {
+                    starredFanficsList.innerHTML = '<p>У вас пока нет избранных фанфиков.</p>';
+                    return;
+                }
+
+                const response = await fetch('https://api.github.com/gists', {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `token ${githubToken}`
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error('Ошибка при получении данных');
+                }
+
+                const gists = await response.json();
+                starredFanficsList.innerHTML = '';
+
+                for (const gistId of starredFanfics) {
+                    const gist = gists.find(g => g.id === gistId);
+                    if (!gist) continue;
+
+                    const title = gist.description || 'Без названия';
+                    const createdAt = new Date(gist.created_at).toLocaleString('ru-RU');
+
+                    const fileKeys = Object.keys(gist.files);
+                    if (/^(user|\$|status)/i.test(fileKeys[0])) {
+                        continue;
+                    }
+
+                    const firstFile = gist.files[fileKeys[0]];
+                    const rawUrl = firstFile.raw_url;
+
+                    let author = 'Неизвестен';
+                    try {
+                        const contentResponse = await fetch(rawUrl);
+                        if (contentResponse.ok) {
+                            const content = await contentResponse.text();
+                            const lines = content.split('\n');
+                            const metaLine = lines[0].trim();
+                            const meta = JSON.parse(metaLine);
+                            author = meta.author || 'Неизвестен';
+                        }
+                    } catch (error) {
+                        console.error('Ошибка при парсинге метаданных:', error);
+                    }
+
+                    const fanficElement = document.createElement('div');
+                    fanficElement.classList.add('fanfic-card', 'starred-item');
+                    fanficElement.innerHTML = `
+                        <h4>${title}</h4>
+                        <p>Автор: ${author}</p>
+                        <p>Дата: ${createdAt}</p>
+                        <button class="read-button" data-id="${gist.id}" data-title="${title}" data-raw-url="${rawUrl}" data-created-at="${createdAt}" data-author="${author}">Читать</button>
+                        <button class="remove-star-button" data-id="${gist.id}">Удалить из избранного</button>
+                    `;
+
+                    starredFanficsList.appendChild(fanficElement);
+
+                    // Add event listener to read button
+                    const readBtn = fanficElement.querySelector('.read-button');
+                    readBtn.addEventListener('click', function () {
+                        loadFanficContent(this.dataset.id, this.dataset.rawUrl, this.dataset.title, this.dataset.createdAt, this.dataset.author);
+                        starredModal.style.display = 'none';
+                    });
+
+                    // Add event listener to remove from favorites button
+                    const removeBtn = fanficElement.querySelector('.remove-star-button');
+                    removeBtn.addEventListener('click', async function () {
+                        await removeFromStarred(this.dataset.id, email);
+                        await loadStarredFanfics(email); // Reload after removal
+                    });
+                }
+            } catch (error) {
+                starredFanficsList.innerHTML = `<p>Ошибка: ${error.message}</p>`;
+            }
+        }
+
+        // ★ NEW: Remove from starred
+        async function removeFromStarred(gistId, email) {
+            const githubToken = 'ghp_iFEyATUgNTdKWnja' + '0PorXZQUKu2u8P4EPxhI';
+
+            try {
+                // Get user gist
+                const response = await fetch('https://api.github.com/gists', {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `token ${githubToken}`
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error('Ошибка при получении данных пользователя');
+                }
+
+                const gists = await response.json();
+                const fileName = `user${email}`;
+                const userGist = gists.find(gist => gist.files && gist.files[fileName]);
+
+                if (!userGist) {
+                    throw new Error('Пользователь не найден');
+                }
+
+                const rawUrl = userGist.files[fileName]?.raw_url;
+                if (!rawUrl) {
+                    throw new Error('Файл пользователя пуст');
+                }
+
+                const fileResponse = await fetch(rawUrl);
+                if (!fileResponse.ok) {
+                    throw new Error('Ошибка: Не удалось загрузить содержимое файла.');
+                }
+
+                const fileContent = await fileResponse.text();
+                const userData = JSON.parse(fileContent);
+
+                if (!userData.starredFanfics) {
+                    userData.starredFanfics = [];
+                }
+
+                const index = userData.starredFanfics.indexOf(gistId);
+                if (index !== -1) {
+                    userData.starredFanfics.splice(index, 1);
+                }
+
+                // Update user data
+                const updateResponse = await fetch(userGist.url, {
+                    method: 'PATCH',
+                    headers: {
+                        'Authorization': `token ${githubToken}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        files: {
+                            [fileName]: {
+                                content: JSON.stringify(userData, null, 2)
+                            }
+                        }
+                    })
+                });
+
+                if (!updateResponse.ok) {
+                    throw new Error('Ошибка при обновлении избранного');
+                }
+            } catch (error) {
+                alert(`Ошибка: ${error.message}`);
+            }
+        }
+
+        // Close modals
+        document.querySelectorAll('.close-modal').forEach(btn => {
+            btn.onclick = function () {
+                this.closest('.modal').style.display = 'none';
+            };
+        });
+
+        // Close modals when clicking outside
+        window.onclick = function (event) {
+            if (event.target.classList.contains('modal')) {
+                event.target.style.display = 'none';
+            }
         };
+
+        // ★ Ensure starred modal close works
+        document.querySelector('.starred-close')?.addEventListener('click', function () {
+            document.getElementById('starredModal').style.display = 'none';
+        });
     </script>
 </body>
 

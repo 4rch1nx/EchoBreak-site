@@ -7,21 +7,19 @@
 
 * {
     box-sizing: border-box;
+    margin: 0;
+    padding: 0;
 }
 
 /* Body Styling */
 body {
     font-family: 'MUNRO', sans-serif;
-    /* Main font */
     font-size: 14px;
-    margin: 0;
-    padding: 0;
     background-color: #121212;
     color: #fff;
     display: flex;
     flex-direction: column;
     min-height: 100vh;
-    /* Ensure body takes at least full viewport height */
 }
 
 /* Header */
@@ -32,40 +30,28 @@ header {
     justify-content: space-between;
     align-items: center;
     font-size: 12px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
 }
 
 header img {
     width: 40px;
-    /* Logo width */
     height: 40px;
-    /* margin-right: 10px; */
 }
 
 header space {
     width: 20px;
 }
 
-/* Active Logo */
 header #logo-link.active {
     border-bottom: 2px solid #e33533;
-    /* Highlight the logo when active */
-}
-
-left-label {
-    display: block;
-    text-align: left;
-    height: 20px;
 }
 
 nav ul {
     list-style: none;
-    margin: 0;
-    padding: 0;
     display: flex;
-}
-
-nav ul li {
-    margin-right: 20px;
+    gap: 20px;
 }
 
 nav ul li a {
@@ -83,26 +69,19 @@ nav ul li a.active {
 /* Separator Line */
 .separator {
     width: 100%;
-    /* Full width */
     height: 1px;
-    /* Thin line */
     background-color: #333;
-    margin: 0 auto;
-    /* Centered horizontally */
 }
 
 /* Main Content */
 main {
     padding: 20px;
     flex: 1;
-    /* Allow main content to take up remaining space */
     text-align: center;
-    /* Center the main content */
 }
 
 h1 {
     font-family: 'MUNRO', sans-serif;
-    /* Title font */
     color: #e33533;
     font-size: 36px;
     margin-bottom: 20px;
@@ -110,7 +89,6 @@ h1 {
 
 h2 {
     font-family: 'MUNRO', sans-serif;
-    /* Title font */
     color: #fff;
     font-size: 28px;
     margin-bottom: 10px;
@@ -125,11 +103,6 @@ p span {
     color: #e33533;
 }
 
-ol {
-    color: #ccc;
-    margin-bottom: 20px;
-}
-
 .button {
     display: inline-block;
     padding: 10px 20px;
@@ -139,6 +112,12 @@ ol {
     border-radius: 5px;
     font-weight: bold;
     transition: background-color 0.3s ease;
+    cursor: pointer;
+    border: none;
+}
+
+.button:hover {
+    background-color: #b33434;
 }
 
 .transparent-button {
@@ -150,10 +129,6 @@ ol {
     border-radius: 5px;
     font-weight: bold;
     transition: background-color 0.3s ease;
-}
-
-.button:hover {
-    background-color: #b33434;
 }
 
 .transparent-button:hover {
@@ -188,14 +163,12 @@ footer {
     text-align: center;
     padding: 10px 0;
     margin-top: auto;
-    /* Push footer to the bottom */
 }
 
 footer span {
     color: #e33533;
 }
 
-/* ===================================== */
 /* Avatar Placeholder */
 .avatar-container {
     display: flex;
@@ -222,7 +195,6 @@ footer span {
     gap: 10px;
 }
 
-
 /* Rounded Rectangles */
 .rounded-rectangle {
     background-color: #3b3b3b;
@@ -232,7 +204,6 @@ footer span {
     color: #fff;
     width: 220px;
     border: 2px solid #d25354;
-    /* Red border */
 }
 
 .rounded-rectangle label {
@@ -249,7 +220,6 @@ footer span {
 /* Warning Banner */
 .warning-banner {
     background-color: #ffd700;
-    /* Bright yellow */
     color: #000;
     padding: 10px 20px;
     font-weight: bold;
@@ -258,57 +228,63 @@ footer span {
     border-bottom: 2px solid #d25354;
 }
 
-/* Fanfic Grid */
+/* === FANFIC GRID === */
 .fanfic-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: 20px;
     margin-top: 20px;
-}
-
-/* Responsive Design for Mobile */
-@media (max-width: 768px) {
-    .fanfic-grid {
-        grid-template-columns: repeat(3, 1fr);
-    }
-
-    .fanfic-image {
-        height: auto;
-        /* Adjust image height automatically */
-        width: 100%;
-    }
+    padding: 0 10px;
 }
 
 .fanfic-card {
     background-color: #3b3b3b;
     border-radius: 10px;
-    padding: 10px;
+    padding: 15px;
     cursor: pointer;
     transition: transform 0.3s ease;
-    height: auto;
+    width: 100%;
+    max-width: calc(100%);
+    margin-bottom: 10px;
+    /* Prevent overflow on mobile */
     display: flex;
-    /* Enable Flexbox */
     flex-direction: column;
-    /* Stack children vertically */
     justify-content: space-between;
-    /* Push content to top and bottom */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
 }
 
 .fanfic-card:hover {
-    transform: scale(1.05);
+    transform: translateY(-5px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4);
+}
+
+/* SQUARE IMAGE */
+.fanfic-image {
+    width: 100%;
+    aspect-ratio: 1;
+    object-fit: cover;
+    border-radius: 8px;
+    margin-bottom: 12px;
+    background-color: #222;
 }
 
 .fanfic-metadata {
     color: #fff;
-    font-size: 10px;
+    font-size: 12px;
     margin-bottom: 10px;
-    /* Add spacing between metadata and image */
+    text-align: center;
+}
+
+.card-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: auto;
 }
 
 .read-button {
-    display: block;
     width: 100%;
-    padding: 5px;
+    padding: 8px;
     background-color: #d25354;
     color: #fff;
     border: none;
@@ -316,34 +292,36 @@ footer span {
     font-weight: bold;
     cursor: pointer;
     transition: background-color 0.3s ease;
-    margin-top: auto;
-    /* Push the button to the bottom */
 }
 
 .read-button:hover {
     background-color: #b33434;
 }
 
-.fanfic-image {
-    width: 100%;
-    height: 100px;
-    /* Adjust height for larger images */
-    object-fit: cover;
+.remove-star-button {
+    background-color: #3b3b3b;
+    color: #ff6b6b;
+    border: 1px solid #ff6b6b;
     border-radius: 5px;
-    margin-bottom: 10px;
+    padding: 5px 10px;
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 14px;
+    margin-top: 10px;
 }
 
-/* Modal Styles */
+/* === MODAL STYLING === */
 .modal {
     display: none;
     position: fixed;
-    z-index: 1;
+    z-index: 1000;
     left: 0;
     top: 0;
     width: 100%;
     height: 100%;
-    overflow: auto;
-    background-color: rgba(0, 0, 0, 0.7);
+    overflow: hidden;
+    background-color: rgba(0, 0, 0, 0.85);
+    backdrop-filter: blur(2px);
 }
 
 .modal-content {
@@ -354,82 +332,337 @@ footer span {
     width: 80%;
     max-width: 600px;
     position: relative;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+}
+.modal-content.star {
+    background-color: #1f1f1f;
 }
 
+/* FULL SCREEN FANFIC MODAL */
 .modal-content.full-screen {
     width: 100%;
     max-width: 100%;
     height: 100%;
+    padding: 0;
+    margin: 0;
+    border-radius: 0;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+/* Sticky Header Inside Modal */
+.modal-header {
+    background-color: #2a2a2a;
     padding: 20px;
-    overflow-y: auto;
-    /* Enable vertical scrolling for long content */
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    border-bottom: 1px solid #444;
+    display: flex;
+    flex-direction: column;
 }
 
-.close-modal {
-    color: #d25354;
-    float: right;
-    font-size: 28px;
-    font-weight: bold;
-    cursor: pointer;
+.modal-title-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
 }
 
-.close-modal:hover,
-.close-modal:focus {
-    color: #fff;
-    text-decoration: none;
-    outline: none;
+.modal-actions {
+    display: flex;
+    gap: 10px;
+    align-items: center;
 }
 
-/* Modal Content Styling */
 #fanficTitle {
     color: #d25354;
     font-size: 24px;
-    margin-bottom: 10px;
+    margin: 0;
+    font-weight: bold;
 }
 
 #fanficAuthorDate {
-    color: #fff;
-    font-size: 16px;
-    margin-bottom: 20px;
+    color: #aaa;
+    font-size: 14px;
+    margin: 5px 0 0 0;
 }
 
+.modal-separator {
+    display: none;
+}
+
+/* FANFIC CONTENT AREA */
 #fanficContent {
-    color: #fff;
-    font-size: 16px;
-    line-height: 1.6;
+    flex: 1;
+    padding: 30px;
+    overflow-y: auto;
+    font-family: 'Segoe UI', system-ui, -apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif;
+    font-size: 18px;
+    line-height: 1.75;
+    color: #e0e0e0;
     text-align: left;
+    hyphens: auto;
+    letter-spacing: -0.01em;
+}
+
+#fanficContent h2 {
+    font-size: 28px;
+    margin: 1.5em 0 0.8em;
+    color: #fff;
+    font-weight: bold;
 }
 
 #fanficContent h3 {
-    font-size: 20px;
+    font-size: 22px;
+    margin: 1.2em 0 0.6em;
+    color: #fff;
     font-weight: bold;
-    margin: 20px 0;
+}
+
+#fanficContent h4 {
+    font-size: 18px;
+    margin: 1em 0 0.5em;
+    color: #ccc;
+    font-weight: bold;
 }
 
 #fanficContent p {
-    margin: 8px 0;
+    margin: 1em 0;
 }
 
-/* Separator Line in Modal */
-.modal-separator {
-    width: 100%;
-    /* Full width */
-    height: 1px;
-    /* Thin line */
-    background-color: #fff;
-    /* White color */
-    margin: 10px 0;
-    /* Add spacing above and below the line */
+#fanficContent ul,
+#fanficContent ol {
+    margin: 1em 0;
+    padding-left: 1.5em;
 }
 
-/* Crypto Card Styles */
+#fanficContent li {
+    margin: 0.5em 0;
+}
+
+#fanficContent blockquote {
+    border-left: 4px solid #d25354;
+    margin: 1.5em 0;
+    padding: 0.5em 1em;
+    background-color: rgba(210, 83, 84, 0.1);
+    font-style: italic;
+}
+
+#fanficContent hr {
+    border: 0;
+    border-top: 2px solid #444;
+    margin: 2em 0;
+}
+
+/* === READING MODE === */
+.reading-mode-button {
+    background: none;
+    border: none;
+    color: #fff;
+    font-size: 18px;
+    cursor: pointer;
+    padding: 6px 12px;
+    border-radius: 6px;
+    transition: all 0.3s ease;
+}
+
+.reading-mode-button:hover {
+    background-color: rgba(255, 255, 255, 0.15);
+}
+
+.light-mode .modal-content.full-screen {
+    background-color: #f9f9f9 !important;
+}
+
+.light-mode #fanficContent {
+    color: #222;
+    background-color: #fdfdfd;
+    font-size: 19px;
+}
+
+.light-mode #fanficTitle,
+.light-mode #fanficContent h2,
+.light-mode #fanficContent h3,
+.light-mode #fanficContent h4 {
+    color: #222;
+}
+
+.light-mode #fanficAuthorDate {
+    color: #555;
+}
+
+.light-mode #fanficContent blockquote {
+    background-color: rgba(210, 83, 84, 0.05);
+    color: #333;
+    border-left-color: #d25354;
+}
+
+.light-mode .modal-header {
+    background-color: #f0f0f0;
+    border-bottom: 1px solid #ddd;
+}
+
+.light-mode .modal-header #fanficTitle {
+    color: #d25354;
+}
+
+.light-mode .modal-header #fanficAuthorDate {
+    color: #555;
+}
+
+.light-mode .modal-actions button {
+    color: #333;
+    background: none;
+}
+
+.light-mode .star-button,
+.light-mode .author-button,
+.light-mode .reading-mode-button {
+    color: #333;
+}
+
+.light-mode .star-button:hover,
+.light-mode .author-button:hover,
+.light-mode .reading-mode-button:hover {
+    background-color: rgba(0, 0, 0, 0.05);
+}
+
+/* Scrollbar */
+#fanficContent::-webkit-scrollbar {
+    width: 10px;
+}
+
+#fanficContent::-webkit-scrollbar-track {
+    background: #2a2a2a;
+}
+
+#fanficContent::-webkit-scrollbar-thumb {
+    background: #d25354;
+    border-radius: 5px;
+}
+
+#fanficContent::-webkit-scrollbar-thumb:hover {
+    background: #b33434;
+}
+
+.light-mode #fanficContent::-webkit-scrollbar-track {
+    background: #f0f0f0;
+}
+
+.light-mode #fanficContent::-webkit-scrollbar-thumb {
+    background: #d25354;
+}
+
+/* Close Button */
+.close-modal {
+    color: #d25354;
+    font-size: 28px;
+    font-weight: bold;
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    cursor: pointer;
+    z-index: 20;
+    padding: 5px;
+    border-radius: 50%;
+    transition: background 0.2s;
+}
+
+.close-modal:hover {
+    background: rgba(210, 83, 84, 0.2);
+    color: #fff;
+}
+
+/* AUTHOR MODAL */
+#authorModal .modal-content {
+    max-width: 500px;
+    width: 90%;
+}
+
+.author-fanfics-list {
+    margin-top: 20px;
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.author-fanfic-item {
+    background-color: #303030;
+    border-radius: 8px;
+    padding: 15px;
+    margin-bottom: 15px;
+    text-align: left;
+}
+
+.author-fanfic-item h4 {
+    margin: 0 0 8px 0;
+    color: #d25354;
+    font-size: 16px;
+}
+
+.author-fanfic-item p {
+    margin: 0 0 10px 0;
+    color: #ccc;
+    font-size: 13px;
+}
+
+.read-button-small {
+    background-color: #d25354;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    padding: 6px 12px;
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 13px;
+    transition: background 0.2s;
+}
+
+.read-button-small:hover {
+    background-color: #b33434;
+}
+
+/* Star Button (ONLY IN MODAL) */
+.star-button {
+    background: none;
+    border: none;
+    color: #FFD700;
+    font-size: 24px;
+    cursor: pointer;
+    transition: transform 0.2s;
+}
+
+.star-button:hover {
+    transform: scale(1.2);
+}
+
+/* Author Button */
+.author-button {
+    background: none;
+    border: none;
+    color: #fff;
+    font-family: 'MUNRO', sans-serif;
+    font-size: 16px;
+    cursor: pointer;
+    padding: 6px 12px;
+    border-radius: 6px;
+    transition: background-color 0.2s;
+}
+
+.author-button:hover {
+    background-color: rgba(210, 83, 84, 0.2);
+}
+
+/* === CRYPTO CARD STYLES === */
 .crypto-card {
     background-color: #3b3b3b;
     border-radius: 20px;
     padding: 20px;
     max-width: 500px;
     margin: 0 auto;
-    border: 2px solid #d25354;
+    border: 2px solid #fff;
     margin-bottom: 10px;
 }
 
@@ -466,24 +699,21 @@ footer span {
     box-sizing: border-box;
 }
 
-/* Project Grid */
+/* === PROJECT GRID === */
 .project-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-    gap: 24px; /* Space between each unit */
+    gap: 24px;
     padding: 20px;
-    justify-items: center; /* Optional: centers units if they don't fill row */
+    justify-items: center;
 }
 
 .project-unit {
     display: block;
-    flex-direction: column;
-    align-items: center;
     width: 100%;
-    max-width: 512px; /* Match your card’s intended width */
+    max-width: 512px;
 }
 
-/* Project Card */
 .project-card {
     background-color: #3b3b3b;
     border-radius: 10px;
@@ -502,14 +732,12 @@ footer span {
     transform: scale(1.02);
 }
 
-/* Content wrapper */
 .project-content {
     display: flex;
     align-items: center;
     width: 100%;
 }
 
-/* Square Image */
 .project-image {
     width: 100px;
     height: 100px;
@@ -519,7 +747,6 @@ footer span {
     flex-shrink: 0;
 }
 
-/* Text Info */
 .project-info {
     flex: 1;
     color: #fff;
@@ -537,7 +764,6 @@ footer span {
     margin: 0;
 }
 
-/* Button - Now outside the card, full width, centered */
 .card-button {
     display: block;
     width: 100%;
@@ -558,7 +784,7 @@ footer span {
     background-color: #e33533;
 }
 
-
+/* === PARTICLE EFFECTS === */
 #particle-burst {
     position: fixed;
     top: 50%;
@@ -590,7 +816,6 @@ footer span {
     }
 }
 
-
 .dot {
     position: absolute;
     width: 10px;
@@ -612,8 +837,7 @@ footer span {
     }
 }
 
-/* === Device Dashboard Styles === */
-
+/* === DEVICE DASHBOARD === */
 .dashboard-container {
     padding: 20px;
 }
@@ -667,8 +891,6 @@ footer span {
     margin-left: 20px;
 }
 
-/* Optional: Add some contrast for hierarchy */
-
 .school {
     border-left: 2px solid #d25354;
     padding-left: 10px;
@@ -687,7 +909,7 @@ footer span {
     margin-bottom: 10px;
 }
 
-
+/* === DOWNLOADS GRID === */
 .downloads-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
@@ -728,7 +950,6 @@ footer span {
     color: #888;
 }
 
-/* Custom Button Example – you can duplicate and edit */
 .custom-button {
     background: #2c2c2c;
     border: 1px solid #4caf50;
@@ -738,7 +959,6 @@ footer span {
 .custom-button:hover {
     background: #254428;
 }
-
 
 .device-box {
     border-radius: 8px;
@@ -768,4 +988,38 @@ footer span {
 
 #dashboard {
     margin-top: 20px;
+}
+
+/* === RESPONSIVE FIXES === */
+@media (max-width: 480px) {
+    .fanfic-grid {
+        padding: 0 5px;
+    }
+
+    .fanfic-card {
+        padding: 10px;
+    }
+
+    .modal-content.full-screen {
+        height: 100vh;
+    }
+
+    #fanficContent {
+        padding: 20px 15px;
+        font-size: 17px;
+    }
+
+    .modal-header {
+        padding: 15px;
+    }
+
+    .modal-title-container {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .modal-actions {
+        width: 100%;
+        justify-content: space-between;
+    }
 }
