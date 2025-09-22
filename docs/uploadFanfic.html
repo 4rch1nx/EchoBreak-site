@@ -27,6 +27,7 @@
         </nav>
     </header>
     <div class="separator"></div>
+
     <!-- Main Content -->
     <main>
         <h1>EchoBreak</h1>
@@ -34,50 +35,73 @@
         <form id="uploadForm">
             <label for="title">Заголовок:</label>
             <input type="text" id="title" name="title" placeholder="Введите заголовок..." required>
+
+            <label for="coverImage">Обложка (необязательно):</label>
+            <input type="file" id="coverImage" name="coverImage" accept="image/*">
+
             <label for="text">Текст:</label>
             <textarea id="text" name="text" rows="10" placeholder="Введите текст фанфика..." required></textarea>
+
             <button type="submit" class="button">Загрузить</button>
         </form>
         <p id="message"></p>
     </main>
-    <!-- Footer -->
-    <footer>
-        <p>EchoBreak, 2025</p>
-    </footer>
+
     <script>
         document.addEventListener('DOMContentLoaded', function () {
             const isLoggedIn = localStorage.getItem('isLoggedIn');
             if (!isLoggedIn || isLoggedIn !== 'true') {
                 const mainContent = document.querySelector('main');
                 mainContent.innerHTML = `
-                    <h2>Вы не вошли в аккаунт</h2>
-                    <button class="button" onclick="location.href='registration.html'">Войти</button>
-                `;
+                <h2>Вы не вошли в аккаунт</h2>
+                <button class="button" onclick="location.href='registration.html'">Войти</button>
+            `;
                 const form = document.getElementById('uploadForm');
-                if (form) {
-                    form.style.display = 'none';
-                }
+                if (form) form.style.display = 'none';
             }
         });
 
         document.getElementById('uploadForm').addEventListener('submit', async function (event) {
             event.preventDefault();
+
             const title = document.getElementById('title').value.trim();
             const text = document.getElementById('text').value.trim();
+            const coverImageInput = document.getElementById('coverImage');
             const messageElement = document.getElementById('message');
+
             if (!title || !text) {
-                messageElement.textContent = 'Ошибка: Заполните все поля.';
+                messageElement.textContent = 'Ошибка: Заполните все обязательные поля.';
                 return;
+            }
+
+            let referenceImage = 'text'; // default
+            const file = coverImageInput.files[0];
+
+            if (file) {
+                try {
+                    const base64Image = await processImage(file);
+                    referenceImage = base64Image; // will be data:image/png;base64,...
+                } catch (error) {
+                    messageElement.textContent = `Ошибка обработки изображения: ${error.message}`;
+                    return;
+                }
             }
 
             const author = localStorage.getItem('userName') || 'Unknown Author';
 
-            const metadataLine = `{"author":"${author}","reference-image":"text"}\n`;
+            // First line: metadata JSON including reference-image
+            const metadataLine = JSON.stringify({
+                author: author,
+                "reference-image": referenceImage
+            }) + '\n';
+
             const fullText = metadataLine + text;
 
             const githubToken = 'ghp_iFEyATUgNTdKWnja' + '0PorXZQUKu2u8P4EPxhI';
+
             try {
                 messageElement.textContent = 'Загрузка...';
+
                 const response = await fetch('https://api.github.com/gists', {
                     method: 'POST',
                     headers: {
@@ -88,25 +112,67 @@
                         description: title,
                         public: true,
                         files: {
-                            [`${title}.txt`]: {
+                            [`${encodeURIComponent(title)}.txt`]: {
                                 content: fullText
                             }
                         }
                     })
                 });
+
                 if (!response.ok) {
                     const errorData = await response.json();
                     throw new Error(`Ошибка: ${errorData.message}`);
                 }
+
                 const gistData = await response.json();
-                messageElement.innerHTML = `Готово!`;
+                messageElement.innerHTML = `Загружено! Перенаправление...`;
                 setTimeout(() => {
                     window.location.href = 'fanfics.html';
                 }, 2000);
+
             } catch (error) {
                 messageElement.textContent = `Ошибка: ${error.message}`;
             }
         });
+
+        // Image processor: resize, crop to square, convert to base64 (256x256 PNG)
+        function processImage(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    const img = new Image();
+                    img.onload = function () {
+                        try {
+                            // Crop to square
+                            const size = Math.min(img.width, img.height);
+                            const offsetX = (img.width - size) / 2;
+                            const offsetY = (img.height - size) / 2;
+
+                            const canvas = document.createElement('canvas');
+                            const ctx = canvas.getContext('2d');
+                            canvas.width = 256; // higher quality than profile pic
+                            canvas.height = 256;
+
+                            // Draw cropped & resized image
+                            ctx.drawImage(img, offsetX, offsetY, size, size, 0, 0, 256, 256);
+
+                            // Optional: add smoothness
+                            ctx.imageSmoothingEnabled = true;
+                            ctx.imageSmoothingQuality = 'high';
+
+                            const base64 = canvas.toDataURL('image/png', 1.0); // full quality PNG
+                            resolve(base64);
+                        } catch (err) {
+                            reject(err);
+                        }
+                    };
+                    img.onerror = reject;
+                    img.src = e.target.result;
+                };
+                reader.onerror = reject;
+                reader.readAsDataURL(file);
+            });
+        }
     </script>
 </body>
 
