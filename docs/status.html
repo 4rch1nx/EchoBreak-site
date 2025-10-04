@@ -35,7 +35,6 @@
     <h1>EchoBreak</h1>
     <h2>Device Status Dashboard</h2>
 
-    <div id="refresh-time"></div>
     <div class="status-line">
       <span class="online-status">Онлайн:</span>
       <span class="total-count" id="online-count">0/0</span>
@@ -44,7 +43,7 @@
       <span class="xmrig-status">XMRig запущено:</span>
       <span class="total-count" id="xmrig-count">0/0</span>
     </div>
-
+    <div id="refresh-time"></div>
 
     <div id="dashboard">Загрузка устройств...</div>
   </main>
@@ -56,13 +55,11 @@
 
   <script>
     const SERVER_URL = 'https://EchoBreakStatus.pythonanywhere.com/api/status';
-    // Removed REFRESH_INTERVAL since auto-update is disabled
 
     const dashboard = document.getElementById('dashboard');
     const refreshTimeEl = document.getElementById('refresh-time');
     const onlineCountEl = document.getElementById('online-count');
     const xmrigCountEl = document.getElementById('xmrig-count');
-    const refreshBtn = document.getElementById('refresh-btn');
 
     async function fetchStatus() {
       try {
@@ -76,7 +73,6 @@
       } catch (error) {
         console.error('Ошибка:', error);
         dashboard.innerHTML = `<p class="status-error">Ошибка загрузки: ${error.message}</p>`;
-        // Reset counters on error
         onlineCountEl.textContent = '0/0';
         xmrigCountEl.textContent = '0/0';
       }
@@ -106,13 +102,11 @@
             hour12: false
           }) : 'неизвестно';
 
-        // Count online devices
         if (displayStatus === 'online') {
           onlineCount++;
         }
 
-        // Count XMRig running devices (assuming 'running' or 'active' status)
-        if (displayXMRig === 'running' || displayXMRig === 'active') {
+        if (displayXMRig === 'running') {
           xmrigCount++;
         }
 
@@ -131,11 +125,7 @@
       xmrigCountEl.textContent = `${xmrigCount}/${totalDevices}`;
     }
 
-    // Initial load
     fetchStatus();
-
-    // Manual refresh button
-    refreshBtn.addEventListener('click', fetchStatus);
   </script>
 </body>
 
