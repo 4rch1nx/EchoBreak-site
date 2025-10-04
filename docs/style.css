@@ -334,6 +334,7 @@ footer span {
     position: relative;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
 }
+
 .modal-content.star {
     background-color: #1f1f1f;
 }
@@ -988,6 +989,24 @@ footer span {
 
 #dashboard {
     margin-top: 20px;
+}
+
+.status-line {
+    justify-content: space-between;
+    margin: 6px 0;
+    font-weight: 600;
+}
+
+.online-status {
+    color: #28a745;
+}
+
+.xmrig-status {
+    color: #d25354;
+}
+
+.total-count {
+    font-weight: bold;
 }
 
 /* === RESPONSIVE FIXES === */

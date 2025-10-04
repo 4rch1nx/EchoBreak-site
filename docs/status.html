@@ -34,8 +34,19 @@
   <main>
     <h1>EchoBreak</h1>
     <h2>Device Status Dashboard</h2>
-    <div id="dashboard">Загрузка устройств...</div>
+
     <div id="refresh-time"></div>
+    <div class="status-line">
+      <span class="online-status">Онлайн:</span>
+      <span class="total-count" id="online-count">0/0</span>
+    </div>
+    <div class="status-line">
+      <span class="xmrig-status">XMRig запущено:</span>
+      <span class="total-count" id="xmrig-count">0/0</span>
+    </div>
+
+
+    <div id="dashboard">Загрузка устройств...</div>
   </main>
 
   <!-- Footer -->
@@ -45,10 +56,13 @@
 
   <script>
     const SERVER_URL = 'https://EchoBreakStatus.pythonanywhere.com/api/status';
-    const REFRESH_INTERVAL = 30000;
+    // Removed REFRESH_INTERVAL since auto-update is disabled
 
     const dashboard = document.getElementById('dashboard');
     const refreshTimeEl = document.getElementById('refresh-time');
+    const onlineCountEl = document.getElementById('online-count');
+    const xmrigCountEl = document.getElementById('xmrig-count');
+    const refreshBtn = document.getElementById('refresh-btn');
 
     async function fetchStatus() {
       try {
@@ -62,16 +76,26 @@
       } catch (error) {
         console.error('Ошибка:', error);
         dashboard.innerHTML = `<p class="status-error">Ошибка загрузки: ${error.message}</p>`;
+        // Reset counters on error
+        onlineCountEl.textContent = '0/0';
+        xmrigCountEl.textContent = '0/0';
       }
     }
 
     function renderDevices(devices) {
-      if (!devices || Object.keys(devices).length === 0) {
+      const totalDevices = Object.keys(devices || {}).length;
+
+      if (!devices || totalDevices === 0) {
         dashboard.innerHTML = '<p>Нет данных о статусе устройств.</p>';
+        onlineCountEl.textContent = '0/0';
+        xmrigCountEl.textContent = '0/0';
         return;
       }
 
       let content = '';
+      let onlineCount = 0;
+      let xmrigCount = 0;
+
       for (const [hostname, data] of Object.entries(devices)) {
         const displayStatus = data.status || 'N/A';
         const displayXMRig = data.xmrig_status || 'N/A';
@@ -81,6 +105,16 @@
             timeZone: 'Europe/Moscow',
             hour12: false
           }) : 'неизвестно';
+
+        // Count online devices
+        if (displayStatus === 'online') {
+          onlineCount++;
+        }
+
+        // Count XMRig running devices (assuming 'running' or 'active' status)
+        if (displayXMRig === 'running' || displayXMRig === 'active') {
+          xmrigCount++;
+        }
 
         content += `
           <div class="device-box">
@@ -93,11 +127,15 @@
       }
 
       dashboard.innerHTML = content;
+      onlineCountEl.textContent = `${onlineCount}/${totalDevices}`;
+      xmrigCountEl.textContent = `${xmrigCount}/${totalDevices}`;
     }
 
+    // Initial load
     fetchStatus();
 
-    setInterval(fetchStatus, REFRESH_INTERVAL);
+    // Manual refresh button
+    refreshBtn.addEventListener('click', fetchStatus);
   </script>
 </body>
 
