@@ -35,10 +35,10 @@
         <form id="registerForm">
             <label for="reg-name">Имя</label>
             <input type="text" id="reg-name" name="reg-name" required>
-            <label for="email">E-mail</label>
-            <input type="email" id="email" name="email" required>
             <label for="password">Пароль</label>
             <input type="password" id="password" name="password" required>
+            <label for="confirm-password">Подтвердите пароль</label>
+            <input type="password" id="confirm-password" name="confirm-password" required>
             <button type="submit" class="button">Зарегистрироваться</button>
             <button type="button" class="button" onclick="location.href='login.html'">Войти</button>
         </form>
@@ -54,18 +54,24 @@
         document.getElementById('registerForm').addEventListener('submit', async function (event) {
             event.preventDefault();
             const name = document.getElementById('reg-name').value.trim();
-            const email = document.getElementById('email').value.trim();
             const password = document.getElementById('password').value.trim();
+            const confirmPassword = document.getElementById('confirm-password').value.trim();
             const messageElement = document.getElementById('message');
 
-            if (!name || !email || !password) {
+            if (!name || !password || !confirmPassword) {
                 messageElement.textContent = 'Ошибка: Заполните все поля.';
+                return;
+            }
+
+            if (password !== confirmPassword) {
+                messageElement.textContent = 'Ошибка: Пароли не совпадают.';
                 return;
             }
 
             try {
                 messageElement.textContent = 'Проверка данных...';
-                const fileName = `user${email}`;
+                // Use name as the identifier instead of email
+                const fileName = `user_${name}`;
 
                 const response = await fetch('https://api.github.com/gists', {
                     method: 'GET',
@@ -82,7 +88,7 @@
                 const userGist = gists.find(gist => gist.files && gist.files[fileName]);
 
                 if (userGist) {
-                    messageElement.textContent = 'Ошибка: Пользователь с таким email уже зарегистрирован.';
+                    messageElement.textContent = 'Ошибка: Пользователь с таким именем уже зарегистрирован.';
                     return;
                 }
 
@@ -96,13 +102,12 @@
                         'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({
-                        description: `User registration for ${email}`,
+                        description: `User registration for ${name}`,
                         public: false,
                         files: {
                             [fileName]: {
                                 content: JSON.stringify({
                                     name,
-                                    email,
                                     password: hashedPassword,
                                     userToken: ''
                                 })

@@ -1,5 +1,5 @@
-fix registration
-add change password
+10 KEYS !!! TODAY
+fix zen4xxx account
+
 add admin panel
-fix xmr status in dashboard
-add edit fanfics function for authors
+add edit fanfics function for authors(maybe not)

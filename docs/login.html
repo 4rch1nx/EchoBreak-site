@@ -33,11 +33,15 @@
         <h2>Вход</h2>
         <p>Пожалуйста, заполните форму ниже:</p>
         <form id="loginForm">
-            <label for="email">E-mail</label>
-            <input type="email" id="email" name="email" required>
+            <label for="login-name">Ник</label>
+            <input type="text" id="login-name" name="login-name" required>
             <label for="password">Пароль</label>
             <input type="password" id="password" name="password" required>
-            <button type="submit" class="button">Войти</button>
+            <div class="button-group">
+                <button type="submit" class="button">Войти</button>
+                <button type="button" class="button"
+                    onclick="location.href='registration.html'">Зарегистрироваться</button>
+            </div>
         </form>
         <p id="message"></p>
     </main>
@@ -50,18 +54,18 @@
 
         document.getElementById('loginForm').addEventListener('submit', async function (event) {
             event.preventDefault();
-            const email = document.getElementById('email').value.trim();
+            const name = document.getElementById('login-name').value.trim();
             const password = document.getElementById('password').value.trim();
             const messageElement = document.getElementById('message');
 
-            if (!email || !password) {
+            if (!name || !password) {
                 messageElement.textContent = 'Ошибка: Заполните все поля.';
                 return;
             }
 
             try {
                 messageElement.textContent = 'Проверка данных...';
-                const fileName = `user${email}`;
+                const fileName = `user_${name}`;
 
                 const response = await fetch('https://api.github.com/gists', {
                     method: 'GET',
@@ -75,7 +79,6 @@
                 }
 
                 const gists = await response.json();
-
                 const userGist = gists.find(gist => gist.files && gist.files[fileName]);
 
                 if (!userGist) {
@@ -84,7 +87,6 @@
                 }
 
                 const rawUrl = userGist.files[fileName]?.raw_url;
-
                 if (!rawUrl) {
                     messageElement.textContent = 'Ошибка: Файл пользователя пуст.';
                     return;
@@ -113,7 +115,6 @@
                 }
 
                 localStorage.setItem('isLoggedIn', 'true');
-                localStorage.setItem('userEmail', email);
                 localStorage.setItem('userName', userData.name);
 
                 messageElement.textContent = 'Вы успешно вошли!';

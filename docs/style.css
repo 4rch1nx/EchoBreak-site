@@ -103,6 +103,14 @@ p span {
     color: #e33533;
 }
 
+left-label {
+    display: block;
+    text-align: left;
+    margin-bottom: 5px;
+    font-weight: bold;
+    color: #fff;
+}
+
 .button {
     display: inline-block;
     padding: 10px 20px;
@@ -654,6 +662,47 @@ footer span {
 
 .author-button:hover {
     background-color: rgba(210, 83, 84, 0.2);
+}
+
+/* Стили для счетчика просмотров */
+.views-count {
+    font-size: 0.9em;
+    color: #666;
+    margin-top: 5px;
+}
+
+/* Стили для статистики */
+.stat-item {
+    margin-bottom: 15px;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+}
+
+.stat-item h4 {
+    margin: 0 0 5px 0;
+    color: #333;
+}
+
+.stat-item p {
+    margin: 2px 0;
+    font-size: 0.9em;
+}
+
+.stats-summary,
+.stats-details {
+    margin-bottom: 20px;
+}
+
+.stats-summary h3,
+.stats-details h3 {
+    border-bottom: 2px solid #d25354;
+    padding-bottom: 5px;
+    margin-bottom: 10px;
+}
+
+#viewStatsButton {
+    margin-top: 5px;
 }
 
 /* === CRYPTO CARD STYLES === */

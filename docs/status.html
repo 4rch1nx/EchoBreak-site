@@ -61,6 +61,31 @@
     const onlineCountEl = document.getElementById('online-count');
     const xmrigCountEl = document.getElementById('xmrig-count');
 
+    // Natural sort helper (handles alphanumeric like SM1, SM2, SM10 correctly)
+    function naturalSort(a, b) {
+      return a.localeCompare(b, undefined, { numeric: true, sensitivity: 'base' });
+    }
+
+    // Custom sort: SM* first (numerically), then others (alphanumerically)
+    function sortDevices(devices) {
+      const entries = Object.entries(devices || {});
+      const smDevices = [];
+      const otherDevices = [];
+
+      for (const [hostname, data] of entries) {
+        if (hostname.startsWith('SM')) {
+          smDevices.push([hostname, data]);
+        } else {
+          otherDevices.push([hostname, data]);
+        }
+      }
+
+      smDevices.sort(([a], [b]) => naturalSort(a, b));
+      otherDevices.sort(([a], [b]) => naturalSort(a, b));
+
+      return [...smDevices, ...otherDevices];
+    }
+
     async function fetchStatus() {
       try {
         dashboard.innerHTML = 'Обновление данных...';
@@ -92,9 +117,12 @@
       let onlineCount = 0;
       let xmrigCount = 0;
 
-      for (const [hostname, data] of Object.entries(devices)) {
+      const sortedEntries = sortDevices(devices);
+
+      for (const [hostname, data] of sortedEntries) {
         const displayStatus = data.status || 'N/A';
         const displayXMRig = data.xmrig_status || 'N/A';
+        const displayVersion = data.version || 'неизвестно';
         const statusClass = displayStatus === 'online' ? 'status-ok' : 'status-error';
         const lastSeen = data.last_seen ?
           new Date(data.last_seen + 'Z').toLocaleString('ru-RU', {
@@ -115,6 +143,7 @@
             <h3>${data.hostname || hostname}</h3>
             <p><strong>Статус:</strong> <span class="${statusClass}">${displayStatus}</span></p>
             <p><strong>XMRig:</strong> ${displayXMRig}</p>
+            <p><strong>Версия:</strong> ${displayVersion}</p>
             <p><small>Обновлено: ${lastSeen}</small></p>
           </div>
         `;
