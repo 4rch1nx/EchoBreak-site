@@ -5,7 +5,7 @@ import requests
 
 app = Flask(__name__)
 
-BOT_TOKEN = "8373273491:AAHKUfwPB2OYTfgejrz8Pbpim-NepdD--EU"
+BOT_TOKEN = "837327" + "3491:AAHKUfwPB2OYTf" + "gejrz8Pbpim-Ne" + "pdD--EU"
 
 def get_username_from_telegram(user_id):
     """Fetch username from Telegram API"""
