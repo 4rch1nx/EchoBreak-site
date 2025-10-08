@@ -422,6 +422,24 @@
 
             try {
                 const response = await fetch('https://api.github.com/gists', {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `token ${githubToken}`
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error('Ошибка при проверке существующих Gists');
+                }
+
+                const gists = await response.json();
+                const existingStatsGist = gists.find(gist => gist.description === 'fanfic_views_stats');
+
+                if (existingStatsGist) {
+                    return existingStatsGist;
+                }
+
+                const createResponse = await fetch('https://api.github.com/gists', {
                     method: 'POST',
                     headers: {
                         'Authorization': `token ${githubToken}`,
@@ -438,11 +456,11 @@
                     })
                 });
 
-                if (!response.ok) {
+                if (!createResponse.ok) {
                     throw new Error('Ошибка при создании Gist для статистики');
                 }
 
-                return await response.json();
+                return await createResponse.json();
             } catch (error) {
                 console.error('Ошибка:', error);
                 return null;
@@ -1027,6 +1045,47 @@
                 alert(`Ошибка: ${error.message}`);
             }
         }
+
+        async function cleanupDuplicateStatsGists() {
+            const githubToken = 'ghp_iFEyATUgNTdKWnja' + '0PorXZQUKu2u8P4EPxhI';
+
+            try {
+                const response = await fetch('https://api.github.com/gists', {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `token ${githubToken}`
+                    }
+                });
+
+                if (!response.ok) return;
+
+                const gists = await response.json();
+                const statsGists = gists.filter(gist => gist.description === 'fanfic_views_stats');
+
+                if (statsGists.length > 1) {
+                    statsGists.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+
+                    const gistsToDelete = statsGists.slice(1);
+
+                    for (const gist of gistsToDelete) {
+                        await fetch(gist.url, {
+                            method: 'DELETE',
+                            headers: {
+                                'Authorization': `token ${githubToken}`
+                            }
+                        });
+                        console.log(`Deleted duplicate stats gist: ${gist.id}`);
+                    }
+
+                    console.log(`Kept stats gist: ${statsGists[0].id}`);
+                }
+            } catch (error) {
+                console.error('Ошибка при очистке дубликатов:', error);
+            }
+        }
+
+        // Run this once to clean up existing duplicates
+        // cleanupDuplicateStatsGists();
 
         document.querySelectorAll('.close-modal').forEach(btn => {
             btn.onclick = function () {

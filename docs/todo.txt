@@ -1,5 +1,5 @@
-10 KEYS !!! TODAY
-fix zen4xxx account
-
 add admin panel
+add 2 way talking in tg-keys - store the available keys on EchoBreakStatus server
 add edit fanfics function for authors(maybe not)
+add paid fanfics (up to 10 rub)
+add NSFW check box for authors in fanfics

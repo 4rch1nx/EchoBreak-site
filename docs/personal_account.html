@@ -237,11 +237,144 @@
                 userToken = userToken.trim();
 
                 if (userToken === '') {
-                    activationKeyField.innerHTML = `<p style="color: gray;">Ключ активации отсутствует</p>`;
+                    const keyInputContainer = document.createElement('div');
+                    keyInputContainer.className = 'key-input-container';
+
+                    const keyInput = document.createElement('input');
+                    keyInput.type = 'text';
+                    keyInput.placeholder = 'Введите ключ активации';
+                    keyInput.className = 'key-input-field';
+                    keyInput.id = 'activationKeyInput';
+
+                    const verifyButton = document.createElement('button');
+                    verifyButton.textContent = '✓';
+                    verifyButton.className = 'verify-key-button';
+                    verifyButton.id = 'verifyKeyButton';
+
+                    keyInputContainer.appendChild(keyInput);
+                    keyInputContainer.appendChild(verifyButton);
+                    activationKeyField.appendChild(keyInputContainer);
+
+                    verifyButton.addEventListener('click', async function () {
+                        await verifyActivationKey(keyInput.value.trim(), userGist, userData, name);
+                    });
+
+                    keyInput.addEventListener('keypress', async function (e) {
+                        if (e.key === 'Enter') {
+                            await verifyActivationKey(keyInput.value.trim(), userGist, userData, name);
+                        }
+                    });
                 } else if (userToken === 'rejected') {
                     activationKeyField.innerHTML = `<p style="color: #d25354;">${userToken}</p>`;
                 } else {
                     activationKeyField.innerHTML = `<p>${userToken}</p>`;
+                }
+
+                async function verifyActivationKey(inputKey, userGist, userData, userName) {
+                    const validKeyHashes = [
+                        "b8e201b97358d66bed875cd882e8a6363c8b40fdc912f9d4cdd1e871038c02a0",
+                        "96f716d03d7bf3a782de48d75600e17aeb94b95ac56530f24c941b600d7e679e",
+                        "c81a8e4d8424ea1c06d24b82e4a62cd3254fb886f03da1dfa0a5374bd1b0e8e6",
+                        "5fcfd3e2373d6e85af43ff3f73757223f6fc9df2e080f94bf9a6989f7354bb71",
+                        "369d3d6ef3a620de198e4dfc1785d113db0c3414b311d5505385d7e336b9ed21",
+                        "0898b001f12ea081083d058ceac4f351c3f3f3e368afd5eab899dccafc7e1ffa",
+                        "9424f1b8a62b36afdf473aa5051f26379e27a590350901f7e87e0c013a09eb18",
+                        "688040768be56e5de38615d26175574f7eee1bef2950e26b9b0d8be7d648b3e6",
+                        "ee610f0687b59c7816edb9893f5e66b9be5e38f0189850f11b07a08cf85faf1f",
+                        "2b89d480f576404697ee0b835946afaf02b713fc0293fb3e6ece1cee7aa09354"
+                    ];
+
+                    async function hashKey(key) {
+                        const encoder = new TextEncoder();
+                        const data = encoder.encode(key);
+                        const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+                        const hashArray = Array.from(new Uint8Array(hashBuffer));
+                        return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+                    }
+
+                    try {
+                        const inputHash = await hashKey(inputKey);
+
+                        const isValidKey = validKeyHashes.includes(inputHash);
+
+                        if (!isValidKey) {
+                            alert('Неверный ключ активации.');
+                            return;
+                        }
+
+                        const allGistsResponse = await fetch('https://api.github.com/gists', {
+                            method: 'GET',
+                            headers: {
+                                'Authorization': `token ${githubToken}`
+                            }
+                        });
+
+                        if (!allGistsResponse.ok) {
+                            throw new Error('Ошибка при проверке ключа.');
+                        }
+
+                        const allGists = await allGistsResponse.json();
+                        let keyAlreadyUsed = false;
+
+                        for (const gist of allGists) {
+                            if (gist.files) {
+                                for (const fileName in gist.files) {
+                                    if (fileName.startsWith('user_')) {
+                                        const fileRawUrl = gist.files[fileName].raw_url;
+                                        const fileResponse = await fetch(fileRawUrl);
+                                        if (fileResponse.ok) {
+                                            const fileContent = await fileResponse.text();
+                                            try {
+                                                const otherUserData = JSON.parse(fileContent);
+                                                if (otherUserData.userToken && otherUserData.userToken.trim() !== '') {
+                                                    const storedKeyHash = await hashKey(otherUserData.userToken);
+                                                    if (storedKeyHash === inputHash && otherUserData.name !== userName) {
+                                                        keyAlreadyUsed = true;
+                                                        break;
+                                                    }
+                                                }
+                                            } catch (e) {
+                                                console.log('Skipping invalid user data file');
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                            if (keyAlreadyUsed) break;
+                        }
+
+                        if (keyAlreadyUsed) {
+                            alert('Этот ключ уже используется другим пользователем.');
+                            return;
+                        }
+
+                        userData.userToken = inputKey;
+
+                        const updateResponse = await fetch(userGist.url, {
+                            method: 'PATCH',
+                            headers: {
+                                'Authorization': `token ${githubToken}`,
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({
+                                files: {
+                                    [`user_${userName}`]: {
+                                        content: JSON.stringify(userData, null, 2)
+                                    }
+                                }
+                            })
+                        });
+
+                        if (!updateResponse.ok) {
+                            throw new Error('Ошибка при обновлении ключа.');
+                        }
+
+                        alert('Ключ успешно активирован!');
+                        location.reload();
+
+                    } catch (error) {
+                        alert(`Ошибка: ${error.message}`);
+                    }
                 }
 
                 const logoutButton = document.getElementById('logoutButton');

@@ -1091,3 +1091,49 @@ footer span {
         justify-content: space-between;
     }
 }
+
+/* Key input container styles */
+.key-input-container {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 5px;
+}
+
+.key-input-field {
+    flex: 1;
+    padding: 8px 12px;
+    background-color: #2a2a2a;
+    border: 2px solid #d25354;
+    border-radius: 5px;
+    color: #fff;
+    font-family: 'MUNRO', sans-serif;
+    font-size: 12px;
+}
+
+.key-input-field::placeholder {
+    color: #888;
+}
+
+.key-input-field:focus {
+    outline: none;
+    border-color: #e33533;
+}
+
+.verify-key-button {
+    padding: 8px 12px;
+    background-color: #d25354;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    font-family: 'MUNRO', sans-serif;
+    font-size: 12px;
+    min-width: 40px;
+}
+
+.verify-key-button:hover {
+    background-color: #b33434;
+}
