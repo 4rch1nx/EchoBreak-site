@@ -130,6 +130,8 @@
                     displayedRole = 'Пользователь';
                 } else if (token.startsWith('UA')) {
                     displayedRole = 'Автор';
+                } else if (token.startsWith('UD')) {
+                    displayedRole = 'Иллюстратор';
                 } else if (token.startsWith('AD')) {
                     displayedRole = 'Разработчик';
                 } else if (token.startsWith('AW')) {
@@ -279,9 +281,7 @@
                         "369d3d6ef3a620de198e4dfc1785d113db0c3414b311d5505385d7e336b9ed21",
                         "0898b001f12ea081083d058ceac4f351c3f3f3e368afd5eab899dccafc7e1ffa",
                         "9424f1b8a62b36afdf473aa5051f26379e27a590350901f7e87e0c013a09eb18",
-                        "688040768be56e5de38615d26175574f7eee1bef2950e26b9b0d8be7d648b3e6",
-                        "ee610f0687b59c7816edb9893f5e66b9be5e38f0189850f11b07a08cf85faf1f",
-                        "2b89d480f576404697ee0b835946afaf02b713fc0293fb3e6ece1cee7aa09354"
+                        "688040768be56e5de38615d26175574f7eee1bef2950e26b9b0d8be7d648b3e6"
                     ];
 
                     async function hashKey(key) {
