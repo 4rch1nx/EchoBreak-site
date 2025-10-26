@@ -73,14 +73,12 @@
             }
 
             try {
-                // Load user data
                 const userDataResp = await fetch(`${API_BASE}/api/user-data?name=${encodeURIComponent(name)}`);
                 if (!userDataResp.ok) {
                     throw new Error('Пользователь не найден');
                 }
                 const { user_data: userData, profile_pic_url: profilePicUrl } = await userDataResp.json();
 
-                // Set role
                 const token = (userData.userToken || '').trim();
                 const roleMap = {
                     'UR': 'Пользователь', 'UA': 'Автор', 'UD': 'Иллюстратор',
@@ -93,7 +91,6 @@
                 document.querySelector('#profile-tab h2').textContent = role;
                 document.getElementById('nameField').textContent = userData.name || name;
 
-                // Load avatar
                 if (profilePicUrl) {
                     const imgResp = await fetch(profilePicUrl);
                     if (imgResp.ok) {
@@ -102,7 +99,6 @@
                     }
                 }
 
-                // Handle activation key
                 const keyField = document.getElementById('activationKeyField');
                 if (!token) {
                     keyField.innerHTML = `
@@ -115,7 +111,6 @@
                     keyField.textContent = token;
                 }
 
-                // Buttons
                 document.getElementById('logoutButton').onclick = () => {
                     localStorage.clear();
                     location.href = 'index.html';
@@ -124,7 +119,6 @@
                     location.href = 'change_password.html';
                 };
 
-                // Avatar upload
                 document.getElementById('addPhotoButton').onclick = () => uploadAvatar(name);
 
             } catch (err) {
@@ -167,7 +161,6 @@
                 if (!file) return;
                 const reader = new FileReader();
                 reader.onload = async (ev) => {
-                    // Process image (crop, resize, circle) — simplified: send as base64
                     const img = new Image();
                     img.src = ev.target.result;
                     img.onload = async () => {
@@ -176,14 +169,12 @@
                         const size = Math.min(img.width, img.height);
                         canvas.width = canvas.height = 128;
                         ctx.drawImage(img, (img.width - size) / 2, (img.height - size) / 2, size, size, 0, 0, 128, 128);
-                        // Circle mask
                         ctx.globalCompositeOperation = 'destination-in';
                         ctx.beginPath();
                         ctx.arc(64, 64, 64, 0, Math.PI * 2);
                         ctx.fill();
                         const base64 = canvas.toDataURL('image/png');
 
-                        // Send to backend
                         const resp = await fetch(`${API_BASE}/api/update-user-data`, {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },

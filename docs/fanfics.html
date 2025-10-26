@@ -106,7 +106,6 @@
             }
 
             try {
-                // Verify access via backend
                 const resp = await fetch(`${API_BASE}/api/user-data?name=${encodeURIComponent(currentUser)}`);
                 if (!resp.ok) throw new Error('Пользователь не найден');
                 const { user_data: userData } = await resp.json();
@@ -126,7 +125,6 @@
             }
         });
 
-        // === FANFIC LIST ===
         async function loadFanfics() {
             const container = document.getElementById('gistsList');
             container.innerHTML = 'Загрузка фанфиков из БД...';
@@ -171,10 +169,8 @@
             }
         }
 
-        // === READ FANFIC ===
         async function loadFanficContent(gistId, rawUrl, title, createdAt, author, stats) {
             try {
-                // Record view
                 await fetch(`${API_BASE}/api/fanfic-stats`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -185,7 +181,6 @@
                 if (!resp.ok) throw new Error('Фанфик недоступен');
                 const { body } = await resp.json();
 
-                // Parse body (simple Markdown-like)
                 let html = '';
                 const lines = body.split('\n');
                 let inList = false, inOrderedList = false;
@@ -221,7 +216,6 @@
                 if (inList) html += '</ul>';
                 if (inOrderedList) html += '</ol>';
 
-                // Update modal
                 document.getElementById('fanficTitle').textContent = title;
                 document.getElementById('fanficAuthorDate').textContent =
                     `Автор: ${author} | Дата выхода: ${new Date(createdAt).toLocaleString('ru-RU')}`;
@@ -229,7 +223,6 @@
                     `${stats.views} просмотров (${stats.uniqueViews} уникальных)`;
                 document.getElementById('fanficContent').innerHTML = html;
 
-                // Star button
                 const starBtn = document.getElementById('starButton');
                 const userResp = await fetch(`${API_BASE}/api/user-data?name=${encodeURIComponent(currentUser)}`);
                 const { user_data } = await userResp.json();
@@ -237,10 +230,8 @@
                 starBtn.textContent = isStarred ? '★' : '☆';
                 starBtn.onclick = () => toggleStar(gistId, starBtn);
 
-                // Author button
                 document.getElementById('viewAuthorButton').onclick = () => viewAuthorHistory(author);
 
-                // Reading mode
                 document.getElementById('toggleReadingMode').onclick = function () {
                     const modal = document.querySelector('.modal-content.full-screen');
                     modal.classList.toggle('light-mode');
@@ -253,7 +244,6 @@
             }
         }
 
-        // === STAR MANAGEMENT ===
         async function toggleStar(gistId, button) {
             const userResp = await fetch(`${API_BASE}/api/user-data?name=${encodeURIComponent(currentUser)}`);
             const { user_data } = await userResp.json();
@@ -328,7 +318,6 @@
             }
         }
 
-        // === AUTHOR HISTORY ===
         async function viewAuthorHistory(authorName) {
             const modal = document.getElementById('authorModal');
             document.getElementById('authorName').textContent = authorName;
@@ -353,7 +342,6 @@
                     }
                 }
 
-                // Stats
                 const total = authorWorks.length;
                 const words = authorWorks.reduce((sum, f) => sum + f.wordCount, 0);
                 const views = authorWorks.reduce((sum, f) => sum + f.stats.views, 0);
@@ -370,7 +358,6 @@
                     <p><strong>Первый фанфик:</strong> ${first}</p>
                 `;
 
-                // List
                 authorWorks.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
                 for (const f of authorWorks) {
                     const item = document.createElement('div');
@@ -392,7 +379,6 @@
             }
         }
 
-        // === GLOBAL STATS ===
         async function showStatsModal() {
             const modal = document.getElementById('statsModal');
             const el = document.getElementById('globalStats');
@@ -425,7 +411,6 @@
             }
         }
 
-        // === MODAL CLOSE ===
         document.querySelectorAll('.close-modal').forEach(btn => {
             btn.onclick = () => btn.closest('.modal').style.display = 'none';
         });

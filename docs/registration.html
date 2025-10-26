@@ -10,6 +10,7 @@
 </head>
 
 <body>
+    <!-- Header -->
     <header>
         <a href="index.html" id="logo-link" class="active">
             <img src="images/logo.png" alt="EchoBreak Logo" class="logo">
@@ -25,6 +26,7 @@
         </nav>
     </header>
     <div class="separator"></div>
+    <!-- Main Content -->
     <main>
         <h1>EchoBreak</h1>
         <h2>Регистрация</h2>
@@ -41,6 +43,7 @@
         </form>
         <p id="message"></p>
     </main>
+    <!-- Footer -->
     <footer>
         <p>EchoBreak, 2025</p>
     </footer>
@@ -68,17 +71,23 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ name, password })
                 });
+
+                if (!response.ok) {
+                    const errorData = await response.json().catch(() => ({ error: 'Неизвестная ошибка' }));
+                    throw new Error(errorData.error || 'Ошибка при регистрации');
+                }
+
                 const result = await response.json();
 
-                if (response.ok) {
+                if (result.success) {
                     messageElement.textContent = result.message;
                     setTimeout(() => window.location.href = 'login.html', 2000);
                 } else {
                     messageElement.textContent = `Ошибка: ${result.error}`;
                 }
             } catch (error) {
-                messageElement.textContent = 'Ошибка: Не удалось подключиться к серверу.';
-                console.error(error);
+                messageElement.textContent = `Ошибка: ${error.message}`;
+                console.error('Registration error:', error);
             }
         });
     </script>
