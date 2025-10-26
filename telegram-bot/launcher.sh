@@ -1,1 +1,0 @@
-@reboot sleep 30 && /home/pi/EchoBreak-support-bot/launcher.sh > /home/pi/EchoBreak-support-bot/launcher.log 2>&1
