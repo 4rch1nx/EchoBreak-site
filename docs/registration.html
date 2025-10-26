@@ -7,11 +7,9 @@
     <title>EchoBreak - Регистрация</title>
     <link rel="stylesheet" href="style.css">
     <link rel="icon" type="image/png" href="images/favicon.png">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
 </head>
 
 <body>
-    <!-- Header -->
     <header>
         <a href="index.html" id="logo-link" class="active">
             <img src="images/logo.png" alt="EchoBreak Logo" class="logo">
@@ -27,7 +25,6 @@
         </nav>
     </header>
     <div class="separator"></div>
-    <!-- Main Content -->
     <main>
         <h1>EchoBreak</h1>
         <h2>Регистрация</h2>
@@ -44,13 +41,10 @@
         </form>
         <p id="message"></p>
     </main>
-    <!-- Footer -->
     <footer>
         <p>EchoBreak, 2025</p>
     </footer>
     <script>
-        const githubToken = 'ghp_iFEyATUgNTdKWnja' + '0PorXZQUKu2u8P4EPxhI';
-
         document.getElementById('registerForm').addEventListener('submit', async function (event) {
             event.preventDefault();
             const name = document.getElementById('reg-name').value.trim();
@@ -62,71 +56,29 @@
                 messageElement.textContent = 'Ошибка: Заполните все поля.';
                 return;
             }
-
             if (password !== confirmPassword) {
                 messageElement.textContent = 'Ошибка: Пароли не совпадают.';
                 return;
             }
 
             try {
-                messageElement.textContent = 'Проверка данных...';
-                // Use name as the identifier instead of email
-                const fileName = `user_${name}`;
-
-                const response = await fetch('https://api.github.com/gists', {
-                    method: 'GET',
-                    headers: {
-                        'Authorization': `token ${githubToken}`
-                    }
-                });
-
-                if (!response.ok) {
-                    throw new Error('Ошибка при получении данных.');
-                }
-
-                const gists = await response.json();
-                const userGist = gists.find(gist => gist.files && gist.files[fileName]);
-
-                if (userGist) {
-                    messageElement.textContent = 'Ошибка: Пользователь с таким именем уже зарегистрирован.';
-                    return;
-                }
-
-                const hashedPassword = CryptoJS.SHA256(password).toString(CryptoJS.enc.Hex);
-
                 messageElement.textContent = 'Регистрация...';
-                const createResponse = await fetch('https://api.github.com/gists', {
+                const response = await fetch('https://EchoBreakStatus.pythonanywhere.com/api/register', {
                     method: 'POST',
-                    headers: {
-                        'Authorization': `token ${githubToken}`,
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        description: `User registration for ${name}`,
-                        public: false,
-                        files: {
-                            [fileName]: {
-                                content: JSON.stringify({
-                                    name,
-                                    password: hashedPassword,
-                                    userToken: ''
-                                })
-                            }
-                        }
-                    })
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, password })
                 });
+                const result = await response.json();
 
-                if (!createResponse.ok) {
-                    const errorData = await createResponse.json();
-                    throw new Error(`Ошибка: ${errorData.message}`);
+                if (response.ok) {
+                    messageElement.textContent = result.message;
+                    setTimeout(() => window.location.href = 'login.html', 2000);
+                } else {
+                    messageElement.textContent = `Ошибка: ${result.error}`;
                 }
-
-                messageElement.textContent = 'Вы успешно зарегистрировались!';
-                setTimeout(() => {
-                    window.location.href = 'login.html';
-                }, 2000);
             } catch (error) {
-                messageElement.textContent = `Ошибка: ${error.message}`;
+                messageElement.textContent = 'Ошибка: Не удалось подключиться к серверу.';
+                console.error(error);
             }
         });
     </script>
