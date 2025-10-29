@@ -59,6 +59,23 @@
                 messageElement.textContent = 'Ошибка: Заполните все поля.';
                 return;
             }
+
+            if (name.includes(' ')) {
+                messageElement.textContent = 'Ошибка: Имя не должно содержать пробелов.';
+                return;
+            }
+
+            const invalidPrefixes = ['$', 'status', 'test', 'user'];
+            const startsWithInvalidPrefix = invalidPrefixes.some(prefix =>
+                name.toLowerCase().startsWith(prefix.toLowerCase())
+            );
+            const startsWithDigit = /^\d/.test(name);
+
+            if (startsWithInvalidPrefix || startsWithDigit) {
+                messageElement.textContent = 'Ошибка: Имя не должно начинаться с "$", "status", "test", "user" или цифры.';
+                return;
+            }
+
             if (password !== confirmPassword) {
                 messageElement.textContent = 'Ошибка: Пароли не совпадают.';
                 return;
