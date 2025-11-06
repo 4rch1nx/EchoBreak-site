@@ -290,7 +290,11 @@
                     starBtn.onclick = () => toggleStar(gistId, starBtn);
                 });
 
-            document.getElementById('viewAuthorButton').onclick = () => viewAuthorHistory(author);
+            // document.getElementById('viewAuthorButton').onclick = () => viewAuthorHistory(author);
+            document.getElementById('viewAuthorButton').onclick = () => {
+                alert('Author button clicked! Author: ' + author);
+                viewAuthorHistory(author);
+            };
             document.getElementById('toggleReadingMode').onclick = function () {
                 const modal = document.querySelector('.modal-content.full-screen');
                 modal.classList.toggle('light-mode');
