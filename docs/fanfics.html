@@ -290,11 +290,7 @@
                     starBtn.onclick = () => toggleStar(gistId, starBtn);
                 });
 
-            // document.getElementById('viewAuthorButton').onclick = () => viewAuthorHistory(author);
-            document.getElementById('viewAuthorButton').onclick = () => {
-                alert('Author button clicked! Author: ' + author);
-                viewAuthorHistory(author);
-            };
+            document.getElementById('viewAuthorButton').onclick = () => viewAuthorHistory(author);
             document.getElementById('toggleReadingMode').onclick = function () {
                 const modal = document.querySelector('.modal-content.full-screen');
                 modal.classList.toggle('light-mode');
@@ -379,27 +375,50 @@
         }
 
         async function viewAuthorHistory(authorName) {
+            if (!authorName || authorName === 'Неизвестен') {
+                alert('Информация об авторе недоступна.');
+                return;
+            }
+
             const modal = document.getElementById('authorModal');
-            document.getElementById('authorName').textContent = authorName;
+            const nameEl = document.getElementById('authorName');
             const statsEl = document.getElementById('authorStats');
             const listEl = document.getElementById('authorFanfics');
+
+            nameEl.textContent = authorName;
             statsEl.innerHTML = 'Загрузка...';
             listEl.innerHTML = '';
+            modal.style.display = 'block';
 
             try {
                 const fanficsResp = await fetch(`${API_BASE}/api/fanfics`);
+                if (!fanficsResp.ok) throw new Error('Не удалось загрузить список фанфиков');
                 const fanfics = await fanficsResp.json();
+
                 const authorWorks = [];
 
                 for (const f of fanfics) {
-                    const metaResp = await fetch(`${API_BASE}/api/fanfic-content?raw_url=${encodeURIComponent(f.raw_url)}`);
-                    if (!metaResp.ok) continue;
-                    const { meta } = await metaResp.json();
-                    if (meta.author === authorName) {
-                        const stats = await fetch(`${API_BASE}/api/fanfic-stats?gist_id=${f.id}`).then(r => r.json());
-                        const wordCount = (await metaResp.json()).body.split(/\s+/).filter(w => w).length;
-                        authorWorks.push({ ...f, meta, stats, wordCount });
+                    try {
+                        const metaResp = await fetch(`${API_BASE}/api/fanfic-content?raw_url=${encodeURIComponent(f.raw_url)}`);
+                        if (!metaResp.ok) continue;
+
+                        const { meta, body } = await metaResp.json();
+                        if (!meta || !meta.author) continue;
+
+                        if (meta.author.trim() === authorName.trim()) {
+                            const stats = await fetch(`${API_BASE}/api/fanfic-stats?gist_id=${f.id}`).then(r => r.json());
+                            const wordCount = body ? body.split(/\s+/).filter(w => w).length : 0;
+                            authorWorks.push({ ...f, meta, stats, wordCount });
+                        }
+                    } catch (e) {
+                        console.warn(`Не удалось обработать фанфик ${f.id}:`, e.message);
+                        continue;
                     }
+                }
+
+                if (authorWorks.length === 0) {
+                    statsEl.innerHTML = `<p>Фанфики от "${authorName}" не найдены.</p>`;
+                    return;
                 }
 
                 const total = authorWorks.length;
@@ -407,35 +426,45 @@
                 const views = authorWorks.reduce((sum, f) => sum + f.stats.views, 0);
                 const unique = authorWorks.reduce((sum, f) => sum + f.stats.uniqueViews, 0);
                 const avgWords = total ? Math.round(words / total) : 0;
-                const first = authorWorks.length ? new Date(Math.min(...authorWorks.map(f => new Date(f.created_at)))).toLocaleDateString('ru-RU') : '—';
+                const firstPubDate = new Date(Math.min(...authorWorks.map(f => new Date(f.created_at))));
+                const first = firstPubDate.toLocaleDateString('ru-RU');
 
                 statsEl.innerHTML = `
-                <p><strong>Фанфиков:</strong> ${total}</p>
-                <p><strong>Всего слов:</strong> ${words.toLocaleString('ru-RU')}</p>
-                <p><strong>Всего просмотров:</strong> ${views.toLocaleString('ru-RU')}</p>
-                <p><strong>Уникальных:</strong> ${unique.toLocaleString('ru-RU')}</p>
-                <p><strong>Среднее слов:</strong> ${avgWords.toLocaleString('ru-RU')}</p>
-                <p><strong>Первый фанфик:</strong> ${first}</p>
-            `;
+            <p><strong>Фанфиков:</strong> ${total}</p>
+            <p><strong>Всего слов:</strong> ${words.toLocaleString('ru-RU')}</p>
+            <p><strong>Всего просмотров:</strong> ${views.toLocaleString('ru-RU')}</p>
+            <p><strong>Уникальных читателей:</strong> ${unique.toLocaleString('ru-RU')}</p>
+            <p><strong>Среднее слов на фанфик:</strong> ${avgWords.toLocaleString('ru-RU')}</p>
+            <p><strong>Первый фанфик:</strong> ${first}</p>
+        `;
 
                 authorWorks.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+
+                listEl.innerHTML = '';
                 for (const f of authorWorks) {
                     const item = document.createElement('div');
                     item.className = 'author-fanfic-item';
+                    const dateStr = new Date(f.created_at).toLocaleDateString('ru-RU');
+                    const wordsStr = f.wordCount.toLocaleString('ru-RU');
+                    const viewsStr = f.stats.views;
+
                     item.innerHTML = `
-                    <h4>${f.title}</h4>
-                    <p>${new Date(f.created_at).toLocaleDateString('ru-RU')} • ${f.wordCount.toLocaleString('ru-RU')} слов • ${f.stats.views} просмотров</p>
-                    <button class="read-button-small" data-id="${f.id}" data-title="${f.title}" 
-                        data-raw="${f.raw_url}" data-date="${f.created_at}">Читать</button>
-                `;
-                    item.querySelector('.read-button-small').onclick = () =>
+                <h4>${f.title}</h4>
+                <p>${dateStr} • ${wordsStr} слов • ${viewsStr} просмотров</p>
+                <button class="read-button-small" data-id="${f.id}" data-title="${f.title}" 
+                    data-raw="${f.raw_url}" data-date="${f.created_at}">Читать</button>
+            `;
+
+                    const readBtn = item.querySelector('.read-button-small');
+                    readBtn.onclick = () => {
                         loadFanficContent(f.id, f.raw_url, f.title, f.created_at, authorName, f.stats);
+                    };
+
                     listEl.appendChild(item);
                 }
-
-                modal.style.display = 'block';
             } catch (err) {
-                statsEl.innerHTML = `Ошибка: ${err.message}`;
+                console.error('Ошибка в viewAuthorHistory:', err);
+                statsEl.innerHTML = `<p>Ошибка: ${err.message || 'неизвестная ошибка'}</p>`;
             }
         }
 
