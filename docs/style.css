@@ -717,6 +717,82 @@ footer span {
     font-weight: bold;
 }
 
+/* Visually hide the real checkbox but keep it accessible */
+.visually-hidden {
+    position: absolute !important;
+    width: 1px !important;
+    height: 1px !important;
+    padding: 0 !important;
+    margin: -1px !important;
+    overflow: hidden !important;
+    clip: rect(0, 0, 0, 0) !important;
+    white-space: nowrap !important;
+    border: 0 !important;
+}
+
+/* Custom checkbox container */
+.checkbox-container {
+    display: flex;
+    align-items: center;
+    margin: 15px 0;
+}
+
+/* Custom checkbox label */
+.custom-checkbox {
+    display: inline-flex;
+    align-items: center;
+    cursor: pointer;
+    font-family: 'MUNRO', sans-serif;
+    font-size: 14px;
+    color: #fff;
+    gap: 10px;
+}
+
+/* Checkmark box styling */
+.custom-checkbox .checkmark {
+    width: 20px;
+    height: 20px;
+    border: 2px solid #d25354;
+    border-radius: 4px;
+    position: relative;
+    display: inline-block;
+    background-color: #3b3b3b;
+    transition: background-color 0.2s, border-color 0.2s;
+}
+
+/* Checkmark icon (✓) – hidden by default */
+.custom-checkbox .checkmark::after {
+    content: '';
+    position: absolute;
+    display: none;
+    left: 50%;
+    top: 50%;
+    width: 6px;
+    height: 12px;
+    border: solid #fff;
+    border-width: 0 2px 2px 0;
+    transform: translate(-50%, -50%) rotate(45deg);
+}
+
+/* Show checkmark when checked */
+#nsfwCheckbox:checked+.custom-checkbox .checkmark {
+    background-color: #d25354;
+    border-color: #d25354;
+}
+
+#nsfwCheckbox:checked+.custom-checkbox .checkmark::after {
+    display: block;
+}
+
+/* Hover effect */
+.custom-checkbox:hover .checkmark {
+    border-color: #e33533;
+}
+
+#nsfwCheckbox:checked+.custom-checkbox:hover .checkmark {
+    background-color: #e33533;
+}
+
 /* === CRYPTO CARD STYLES === */
 .crypto-card {
     background-color: #3b3b3b;

@@ -38,9 +38,13 @@
             <label for="coverImage">Обложка (необязательно):</label>
             <input type="file" id="coverImage" name="coverImage" accept="image/*">
 
-            <label>
-                <input type="checkbox" id="nsfwCheckbox"> NSFW
-            </label>
+            <div class="checkbox-container">
+                <input type="checkbox" id="nsfwCheckbox" class="visually-hidden">
+                <label for="nsfwCheckbox" class="custom-checkbox">
+                    <span class="checkmark"></span>
+                    NSFW
+                </label>
+            </div>
 
             <label for="text">Текст:</label>
             <textarea id="text" name="text" rows="10" placeholder="Введите текст фанфика..." required></textarea>
