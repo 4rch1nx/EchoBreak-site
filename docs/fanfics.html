@@ -89,7 +89,7 @@
         </div>
 
         <div id="nsfwWarningModal" class="modal">
-            <div class="modal-content" style="max-width: 500px; text-align: center;">
+            <div class="modal-content" style="max-width: 450px; padding: 20px; text-align: center;">
                 <h2>Внимание: NSFW</h2>
                 <p>Этот фанфик содержит NSFW контент.</p>
                 <p>Вы подтверждаете, что хотите продолжить?</p>
@@ -187,36 +187,43 @@
             try {
                 const resp = await fetch(`${API_BASE}/api/fanfic-content?raw_url=${encodeURIComponent(rawUrl)}`);
                 if (!resp.ok) throw new Error('Фанфик недоступен');
-                const { body } = await resp.json();
-
-                const lines = body.split('\n');
-                let meta = {};
-                let contentStart = 0;
-                if (lines[0].startsWith('{') && lines[0].endsWith('}')) {
-                    try {
-                        meta = JSON.parse(lines[0]);
-                        contentStart = 1;
-                    } catch (e) {
-                        meta = {};
-                    }
-                }
-                const actualContent = lines.slice(contentStart).join('\n');
+                const { meta, body } = await resp.json();
 
                 if (meta.nsfw === "true") {
-                    document.getElementById('nsfwWarningModal').style.display = 'block';
-                    pendingNsfwFanfic = { gistId, rawUrl, title, createdAt, author, stats, meta, actualContent };
-                    return;
-                }
+                    const modal = document.getElementById('nsfwWarningModal');
+                    modal.style.display = 'block';
 
-                renderFanficContent(gistId, title, createdAt, author, stats, meta, actualContent);
+                    const confirmBtn = document.getElementById('confirmNsfw');
+                    const cancelBtn = document.getElementById('cancelNsfw');
+
+                    const onConfirm = () => {
+                        modal.style.display = 'none';
+                        renderFanficContent(gistId, title, createdAt, author, stats, meta, body);
+                        cleanup();
+                    };
+                    const onCancel = () => {
+                        modal.style.display = 'none';
+                        cleanup();
+                    };
+
+                    const cleanup = () => {
+                        confirmBtn.removeEventListener('click', onConfirm);
+                        cancelBtn.removeEventListener('click', onCancel);
+                    };
+
+                    confirmBtn.addEventListener('click', onConfirm);
+                    cancelBtn.addEventListener('click', onCancel);
+                } else {
+                    renderFanficContent(gistId, title, createdAt, author, stats, meta, body);
+                }
             } catch (err) {
-                alert(`Ошибка: ${err.message}`);
+                alert(`Ошибка загрузки: ${err.message}`);
             }
         }
 
-        function renderFanficContent(gistId, title, createdAt, author, stats, meta, actualContent) {
+        function renderFanficContent(gistId, title, createdAt, author, stats, meta, body) {
             let html = '';
-            const lines = actualContent.split('\n');
+            const lines = body.split('\n');
             let inList = false, inOrderedList = false;
 
             for (let line of lines) {
@@ -273,7 +280,6 @@
                 });
 
             document.getElementById('viewAuthorButton').onclick = () => viewAuthorHistory(author);
-
             document.getElementById('toggleReadingMode').onclick = function () {
                 const modal = document.querySelector('.modal-content.full-screen');
                 modal.classList.toggle('light-mode');
