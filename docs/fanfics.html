@@ -87,6 +87,18 @@
                 </div>
             </div>
         </div>
+
+        <div id="nsfwWarningModal" class="modal">
+            <div class="modal-content" style="max-width: 500px; text-align: center;">
+                <h2>Внимание: NSFW</h2>
+                <p>Этот фанфик содержит NSFW контент.</p>
+                <p>Вы подтверждаете, что хотите продолжить?</p>
+                <div style="margin-top: 20px;">
+                    <button class="button" id="showNsfwContent">Продолжить</button>
+                    <button class="transparent-button" id="cancelNsfw">Назад</button>
+                </div>
+            </div>
+        </div>
     </main>
     <footer>
         <p>EchoBreak, 2025</p>
@@ -169,101 +181,130 @@
             }
         }
 
+        let pendingNsfwFanfic = null;
+
         async function loadFanficContent(gistId, rawUrl, title, createdAt, author, stats) {
             try {
-                await fetch(`${API_BASE}/api/fanfic-stats`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ gist_id: gistId, user_name: currentUser })
-                });
-
                 const resp = await fetch(`${API_BASE}/api/fanfic-content?raw_url=${encodeURIComponent(rawUrl)}`);
                 if (!resp.ok) throw new Error('Фанфик недоступен');
                 const { body } = await resp.json();
 
-                let html = '';
                 const lines = body.split('\n');
-                let inList = false, inOrderedList = false;
-
-                for (let line of lines) {
-                    line = line.trim();
-                    if (line.startsWith('###')) {
-                        html += `<h4>${line.slice(3).trim()}</h4>`;
-                    } else if (line.startsWith('##')) {
-                        html += `<h3>${line.slice(2).trim()}</h3>`;
-                    } else if (line.startsWith('#')) {
-                        html += `<h2>${line.slice(1).trim()}</h2>`;
-                    } else if (line.startsWith('* ') || line.startsWith('- ')) {
-                        if (!inList) { html += '<ul>'; inList = true; }
-                        html += `<li>${line.slice(2).trim()}</li>`;
-                    } else if (/^\d+\.\s/.test(line)) {
-                        if (!inOrderedList) { html += '<ol>'; inOrderedList = true; }
-                        html += `<li>${line.replace(/^\d+\.\s*/, '').trim()}</li>`;
-                    } else if (line === '---' || line === '***') {
-                        html += '<hr>';
-                    } else if (line.startsWith('>')) {
-                        html += `<blockquote>${line.slice(1).trim()}</blockquote>`;
-                    } else if (line) {
-                        if (inList) { html += '</ul>'; inList = false; }
-                        if (inOrderedList) { html += '</ol>'; inOrderedList = false; }
-                        html += `<p>${line}</p>`;
-                    } else {
-                        if (inList) { html += '</ul>'; inList = false; }
-                        if (inOrderedList) { html += '</ol>'; inOrderedList = false; }
-                        html += '<br>';
+                let meta = {};
+                let contentStart = 0;
+                if (lines[0].startsWith('{') && lines[0].endsWith('}')) {
+                    try {
+                        meta = JSON.parse(lines[0]);
+                        contentStart = 1;
+                    } catch (e) {
+                        meta = {};
                     }
                 }
-                if (inList) html += '</ul>';
-                if (inOrderedList) html += '</ol>';
+                const actualContent = lines.slice(contentStart).join('\n');
 
-                document.getElementById('fanficTitle').textContent = title;
-                document.getElementById('fanficAuthorDate').textContent =
-                    `Автор: ${author} | Дата выхода: ${new Date(createdAt).toLocaleString('ru-RU')}`;
-                document.getElementById('fanficStats').textContent =
-                    `${stats.views} просмотров (${stats.uniqueViews} уникальных)`;
-                document.getElementById('fanficContent').innerHTML = html;
+                if (meta.nsfw === "true") {
+                    document.getElementById('nsfwWarningModal').style.display = 'block';
+                    pendingNsfwFanfic = { gistId, rawUrl, title, createdAt, author, stats, meta, actualContent };
+                    return;
+                }
 
-                const starBtn = document.getElementById('starButton');
-                const userResp = await fetch(`${API_BASE}/api/user-data?name=${encodeURIComponent(currentUser)}`);
-                const { user_data } = await userResp.json();
-                const isStarred = (user_data.starredFanfics || []).includes(gistId);
-                starBtn.textContent = isStarred ? '★' : '☆';
-                starBtn.onclick = () => toggleStar(gistId, starBtn);
-
-                document.getElementById('viewAuthorButton').onclick = () => viewAuthorHistory(author);
-
-                document.getElementById('toggleReadingMode').onclick = function () {
-                    const modal = document.querySelector('.modal-content.full-screen');
-                    modal.classList.toggle('light-mode');
-                    this.textContent = modal.classList.contains('light-mode') ? '☼' : '◐';
-                };
-
-                document.getElementById('fanficModal').style.display = 'block';
+                renderFanficContent(gistId, title, createdAt, author, stats, meta, actualContent);
             } catch (err) {
                 alert(`Ошибка: ${err.message}`);
             }
         }
 
-        async function toggleStar(gistId, button) {
-            const userResp = await fetch(`${API_BASE}/api/user-data?name=${encodeURIComponent(currentUser)}`);
-            const { user_data } = await userResp.json();
-            const starred = user_data.starredFanfics || [];
-            const isStarred = starred.includes(gistId);
+        function renderFanficContent(gistId, title, createdAt, author, stats, meta, actualContent) {
+            let html = '';
+            const lines = actualContent.split('\n');
+            let inList = false, inOrderedList = false;
 
-            if (isStarred) {
-                starred.splice(starred.indexOf(gistId), 1);
-                button.textContent = '☆';
-            } else {
-                starred.push(gistId);
-                button.textContent = '★';
+            for (let line of lines) {
+                line = line.trim();
+                if (line.startsWith('###')) {
+                    html += `<h4>${line.slice(3).trim()}</h4>`;
+                } else if (line.startsWith('##')) {
+                    html += `<h3>${line.slice(2).trim()}</h3>`;
+                } else if (line.startsWith('#')) {
+                    html += `<h2>${line.slice(1).trim()}</h2>`;
+                } else if (line.startsWith('* ') || line.startsWith('- ')) {
+                    if (!inList) { html += '<ul>'; inList = true; }
+                    html += `<li>${line.slice(2).trim()}</li>`;
+                } else if (/^\d+\.\s/.test(line)) {
+                    if (!inOrderedList) { html += '<ol>'; inOrderedList = true; }
+                    html += `<li>${line.replace(/^\d+\.\s*/, '').trim()}</li>`;
+                } else if (line === '---' || line === '***') {
+                    html += '<hr>';
+                } else if (line.startsWith('>')) {
+                    html += `<blockquote>${line.slice(1).trim()}</blockquote>`;
+                } else if (line) {
+                    if (inList) { html += '</ul>'; inList = false; }
+                    if (inOrderedList) { html += '</ol>'; inOrderedList = false; }
+                    html += `<p>${line}</p>`;
+                } else {
+                    if (inList) { html += '</ul>'; inList = false; }
+                    if (inOrderedList) { html += '</ol>'; inOrderedList = false; }
+                    html += '<br>';
+                }
             }
+            if (inList) html += '</ul>';
+            if (inOrderedList) html += '</ol>';
 
-            await fetch(`${API_BASE}/api/update-user-data`, {
+            document.getElementById('fanficTitle').textContent = title;
+            document.getElementById('fanficAuthorDate').textContent =
+                `Автор: ${author} | Дата выхода: ${new Date(createdAt).toLocaleString('ru-RU')}`;
+            document.getElementById('fanficStats').textContent =
+                `${stats.views} просмотров (${stats.uniqueViews} уникальных)`;
+            document.getElementById('fanficContent').innerHTML = html;
+
+            fetch(`${API_BASE}/api/fanfic-stats`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ name: currentUser, updates: { starredFanfics: starred } })
+                body: JSON.stringify({ gist_id: gistId, user_name: currentUser })
             });
+
+            const starBtn = document.getElementById('starButton');
+            fetch(`${API_BASE}/api/user-data?name=${encodeURIComponent(currentUser)}`)
+                .then(r => r.json())
+                .then(({ user_data }) => {
+                    const isStarred = (user_data.starredFanfics || []).includes(gistId);
+                    starBtn.textContent = isStarred ? '★' : '☆';
+                    starBtn.onclick = () => toggleStar(gistId, starBtn);
+                });
+
+            document.getElementById('viewAuthorButton').onclick = () => viewAuthorHistory(author);
+
+            document.getElementById('toggleReadingMode').onclick = function () {
+                const modal = document.querySelector('.modal-content.full-screen');
+                modal.classList.toggle('light-mode');
+                this.textContent = modal.classList.contains('light-mode') ? '☼' : '◐';
+            };
+
+            document.getElementById('fanficModal').style.display = 'block';
         }
+
+        document.getElementById('showNsfwContent').onclick = async () => {
+            if (pendingNsfwFanfic) {
+                const { gistId, title, createdAt, author, stats, meta, actualContent } = pendingNsfwFanfic;
+                document.getElementById('nsfwWarningModal').style.display = 'none';
+                renderFanficContent(gistId, title, createdAt, author, stats, meta, actualContent);
+                pendingNsfwFanfic = null;
+            }
+        };
+
+        document.getElementById('cancelNsfw').onclick = () => {
+            document.getElementById('nsfwWarningModal').style.display = 'none';
+            pendingNsfwFanfic = null;
+        };
+
+        window.onclick = (e) => {
+            if (e.target.classList.contains('modal')) {
+                e.target.style.display = 'none';
+                if (e.target.id === 'nsfwWarningModal') {
+                    pendingNsfwFanfic = null;
+                }
+            }
+        };
 
         async function loadStarredFanfics() {
             const modal = document.getElementById('starredModal');

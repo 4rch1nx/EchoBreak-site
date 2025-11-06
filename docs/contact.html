@@ -79,7 +79,6 @@
                 const message = formData.get('message');
                 const time = formData.get('time');
 
-                // Проверка email
                 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
                 if (!emailRegex.test(userEmail)) {
                     alert('Пожалуйста, введите корректный email.');
