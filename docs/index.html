@@ -32,6 +32,9 @@
 
     <!-- Main Content -->
     <main>
+        <!-- New Year Countdown (in flow, above h1) -->
+        <div id="ny-countdown" class="countdown-above-title"></div>
+
         <h1>EchoBreak</h1>
         <h2>Главная</h2>
         <h3>Этот сайт был сделан исключительно в образовательных целях!</h3>
@@ -46,113 +49,86 @@
         <p>EchoBreak, 2025</p>
     </footer>
 
-    <!-- NEW YEAR THEME: SNOW + COUNTDOWN (UTC+3, red, repositionable) -->
-<div id="snow-container"></div>
-<div id="ny-countdown"></div>
+    <!-- Falling Snow Container -->
+    <div id="snow-container"></div>
 
-<script>
-    // === FALLING SNOWFLAKES (unchanged) ===
-    const snowContainer = document.getElementById('snow-container');
-    const flakes = ['*', '·', '✦', '✧', '+', '∘', '•'];
-    const snowCount = 35;
+    <script>
+        // === FALLING CODE-STYLE SNOWFLAKES ===
+        const snowContainer = document.getElementById('snow-container');
+        const flakes = ['*', '·', '✦', '✧', '+', '∘', '•'];
+        const snowCount = 35;
 
-    snowContainer.style.cssText = `
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        pointer-events: none;
-        z-index: 9999;
-    `;
-
-    for (let i = 0; i < snowCount; i++) {
-        const flake = document.createElement('span');
-        flake.textContent = flakes[Math.floor(Math.random() * flakes.length)];
-        const size = 8 + Math.random() * 10;
-        const left = Math.random() * 100;
-        const duration = 6 + Math.random() * 10;
-        const opacity = 0.4 + Math.random() * 0.6;
-        const delay = Math.random() * 5;
-
-        flake.style.cssText = `
-            position: absolute;
-            top: -20px;
-            left: ${left}vw;
-            font-size: ${size}px;
-            opacity: ${opacity};
-            color: #e0e0ff;
-            font-family: monospace;
-            user-select: none;
-            animation: snowfall ${duration}s linear infinite;
-            animation-delay: ${delay}s;
+        snowContainer.style.cssText = `
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 9999;
         `;
-        snowContainer.appendChild(flake);
-    }
 
-    // === COUNTDOWN TO JAN 1, 2026 00:00 IN UTC+3 ===
-    const countdownEl = document.getElementById('ny-countdown');
-    countdownEl.style.cssText = `
-        position: fixed;
-        top: 80px;                /* ← CHANGE THIS VALUE TO MOVE IT UP/DOWN */
-        left: 0;
-        right: 0;
-        text-align: center;
-        font-family: monospace;
-        font-size: 1.1em;
-        color: #e33533;
-        background: rgba(10, 10, 20, 0.7);
-        padding: 8px;
-        z-index: 10000;
-        border: 1px solid #333;
-        border-radius: 4px;
-    `;
+        for (let i = 0; i < snowCount; i++) {
+            const flake = document.createElement('span');
+            flake.textContent = flakes[Math.floor(Math.random() * flakes.length)];
+            const size = 8 + Math.random() * 10;
+            const left = Math.random() * 100;
+            const duration = 6 + Math.random() * 10;
+            const opacity = 0.4 + Math.random() * 0.6;
+            const delay = Math.random() * 5;
 
-    function updateCountdown() {
-        // Current time in UTC+3 (no DST logic—assumes standard offset)
-        const now = new Date();
-        const nowUTC = now.getTime() + (now.getTimezoneOffset() * 60000);
-        const nowUTCPlus3 = new Date(nowUTC + (3 * 3600000));
-
-        // Target: Jan 1, 2026 00:00:00 in UTC+3 → treat as local time
-        const ny2026 = new Date(2026, 0, 1, 0, 0, 0); // This is interpreted in *local* time
-
-        // But to be precise: we calculate the UTC moment that corresponds to 00:00 UTC+3 on Jan 1, 2026
-        // That is: Jan 1, 2026 00:00 UTC+3 == Dec 31, 2025 21:00 UTC
-        const ny2026UTC = Date.UTC(2025, 11, 31, 21, 0, 0); // Month is 0-indexed → 11 = December
-        const diff = ny2026UTC - Date.now();
-
-        if (diff <= 0) {
-            countdownEl.textContent = '🎉 С Новым Годом 2026! 🎆';
-            return;
+            flake.style.cssText = `
+                position: absolute;
+                top: -20px;
+                left: ${left}vw;
+                font-size: ${size}px;
+                opacity: ${opacity};
+                color: #e0e0ff;
+                font-family: monospace;
+                user-select: none;
+                animation: snowfall ${duration}s linear infinite;
+                animation-delay: ${delay}s;
+            `;
+            snowContainer.appendChild(flake);
         }
 
-        const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-        const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-        const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-        const secs = Math.floor((diff % (1000 * 60)) / 1000);
+        // === COUNTDOWN TO JAN 1, 2026 00:00 UTC+3 ===
+        const countdownEl = document.getElementById('ny-countdown');
 
-        countdownEl.textContent = `Новый Год через: ${days}д ${hours}ч ${mins}м ${secs}с`;
-    }
+        function updateCountdown() {
+            // Jan 1, 2026 00:00 in UTC+3 = Dec 31, 2025 21:00 UTC
+            const ny2026UTC = Date.UTC(2025, 11, 31, 21, 0, 0);
+            const diff = ny2026UTC - Date.now();
 
-    // Inject snow animation CSS
-    if (!document.getElementById('ny-snow-style')) {
-        const style = document.createElement('style');
-        style.id = 'ny-snow-style';
-        style.textContent = `
-            @keyframes snowfall {
-                0% { transform: translateY(-10vh) rotate(0deg); }
-                100% { transform: translateY(110vh) rotate(360deg); }
+            if (diff <= 0) {
+                countdownEl.textContent = 'С Новым Годом 2026!';
+                return;
             }
-        `;
-        document.head.appendChild(style);
-    }
 
-    setInterval(updateCountdown, 1000);
-    updateCountdown();
-</script>
-<!-- END NEW YEAR THEME -->
+            const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+            const secs = Math.floor((diff % (1000 * 60)) / 1000);
+
+            countdownEl.textContent = `Новый Год через: ${days}д ${hours}ч ${mins}м ${secs}с`;
+        }
+
+        // Inject snow animation CSS
+        if (!document.getElementById('ny-snow-style')) {
+            const style = document.createElement('style');
+            style.id = 'ny-snow-style';
+            style.textContent = `
+                @keyframes snowfall {
+                    0% { transform: translateY(-10vh) rotate(0deg); }
+                    100% { transform: translateY(110vh) rotate(360deg); }
+                }
+            `;
+            document.head.appendChild(style);
+        }
+
+        setInterval(updateCountdown, 1000);
+        updateCountdown();
+    </script>
 
 </body>
-
 </html>
