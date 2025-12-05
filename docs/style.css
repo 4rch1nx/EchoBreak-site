@@ -1225,3 +1225,25 @@ footer span {
 .verify-key-button:hover {
     background-color: #b33434;
 }
+
+/* New Year Countdown — placed above <h1> */
+#ny-countdown {
+    text-align: center;
+    font-family: monospace;
+    font-size: 1.1em;
+    color: #e33533;
+    background: rgba(10, 10, 20, 0.7);
+    padding: 10px;
+    margin-bottom: 24px;
+    border: 1px solid #333;
+    border-radius: 4px;
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+/* Snowflake animation (required for falling effect) */
+@keyframes snowfall {
+    0% { transform: translateY(-10vh) rotate(0deg); }
+    100% { transform: translateY(110vh) rotate(360deg); }
+}
