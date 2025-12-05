@@ -1229,7 +1229,7 @@ footer span {
 /* New Year Countdown — placed above <h1> */
 #ny-countdown {
     text-align: center;
-    font-family: monospace;
+    font-family: 'MUNRO';
     font-size: 1.1em;
     color: #e33533;
     background: rgba(10, 10, 20, 0.7);
