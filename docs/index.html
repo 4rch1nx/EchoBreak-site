@@ -32,16 +32,27 @@
 
     <!-- Main Content -->
     <main>
-        <!-- New Year Countdown (in flow, above h1) -->
+        <!-- New Year Countdown -->
         <div id="ny-countdown" class="countdown-above-title"></div>
 
         <h1>EchoBreak</h1>
         <h2>Главная</h2>
         <h3>Этот сайт был сделан исключительно в образовательных целях!</h3>
-        <!-- <section class="tribute">
-            <h3><strong>Inspired by 4chan</strong></h3>
-            <img src="images/4chan.png" alt="image" class="tribute-image">
-        </section> -->
+
+        <!-- Terminal-style Interactive Prompt -->
+        <div id="terminal" class="terminal">
+            <div id="terminal-output" class="terminal-output"></div>
+            <div class="terminal-input-line">
+                <span class="prompt">> </span>
+                <input type="text" id="terminal-input" autocomplete="off" spellcheck="false">
+            </div>
+        </div>
+
+        <!-- Countdown to May 31 -->
+        <div id="may-countdown" class="countdown-below-terminal"></div>
+
+        <!-- Countdown to next holiday -->
+        <div id="holiday-countdown" class="countdown-below-terminal"></div>
     </main>
 
     <!-- Footer -->
@@ -53,7 +64,6 @@
     <div id="snow-container"></div>
 
     <script>
-        // === FALLING CODE-STYLE SNOWFLAKES ===
         const snowContainer = document.getElementById('snow-container');
         const flakes = ['*', '·', '✦', '✧', '+', '∘', '•'];
         const snowCount = 35;
@@ -96,7 +106,6 @@
         const countdownEl = document.getElementById('ny-countdown');
 
         function updateCountdown() {
-            // Jan 1, 2026 00:00 in UTC+3 = Dec 31, 2025 21:00 UTC
             const ny2026UTC = Date.UTC(2025, 11, 31, 21, 0, 0);
             const diff = ny2026UTC - Date.now();
 
@@ -113,7 +122,6 @@
             countdownEl.textContent = `Новый Год через: ${days}д ${hours}ч ${mins}м ${secs}с`;
         }
 
-        // Inject snow animation CSS
         if (!document.getElementById('ny-snow-style')) {
             const style = document.createElement('style');
             style.id = 'ny-snow-style';
@@ -128,7 +136,208 @@
 
         setInterval(updateCountdown, 1000);
         updateCountdown();
+
+        const terminalInput = document.getElementById('terminal-input');
+        const terminalOutput = document.getElementById('terminal-output');
+
+        function printLine(text) {
+            const line = document.createElement('div');
+            line.textContent = text;
+            terminalOutput.appendChild(line);
+        }
+
+        function printCommand(command) {
+            const line = document.createElement('div');
+            line.innerHTML = '<span class="prompt">&gt;</span> ' + command;
+            terminalOutput.appendChild(line);
+        }
+
+        terminalInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                const input = terminalInput.value.trim();
+                if (!input) return;
+
+                terminalInput.value = '';
+                printCommand(input);
+
+                const [cmd, ...args] = input.split(' ');
+                const argStr = args.join(' ').trim();
+
+                if (cmd === 'cd') {
+                    if (!argStr) {
+                        printLine('Использование: cd <страница>');
+                        printLine('Доступно: about, projects, fanfics, crypto, account');
+                        return;
+                    }
+
+                    const aliases = {
+                        'about': 'about.html',
+                        'projects': 'projects.html',
+                        'fanfics': 'fanfics.html',
+                        'crypto': 'crypto.html',
+                        'account': 'personal_account.html'
+                    };
+
+                    const target = aliases[argStr] || null;
+                    if (target) {
+                        printLine(`Переход на ${target}...`);
+                        setTimeout(() => window.location.href = target, 500);
+                    } else {
+                        printLine(`cd: неизвестная страница "${argStr}"`);
+                        printLine('Доступно: about, projects, fanfics, crypto, account');
+                    }
+
+                } else if (cmd === 'goto') {
+                    if (!argStr) {
+                        printLine('Использование: goto /путь/к/файлу.html');
+                        return;
+                    }
+
+                    let url = argStr;
+                    if (!url.startsWith('/')) {
+                        url = '/' + url;
+                    }
+
+                    try {
+                        const testUrl = new URL(url, window.location.origin);
+                        if (testUrl.origin !== window.location.origin) {
+                            throw new Error('Внешние ссылки запрещены');
+                        }
+                        printLine(`Переход на ${testUrl.pathname}...`);
+                        setTimeout(() => window.location.href = testUrl.pathname, 500);
+                    } catch (err) {
+                        printLine('goto: недопустимый путь (только внутренние страницы)');
+                    }
+
+                } else if (cmd === 'time') {
+                    const now = new Date().toLocaleString('ru-RU', {
+                        timeZone: 'Europe/Moscow',
+                        year: 'numeric',
+                        month: '2-digit',
+                        day: '2-digit',
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        second: '2-digit'
+                    });
+                    printLine(`Текущее время (МСК): ${now}`);
+                } else if (cmd === 'weather') {
+                    printLine('Загрузка погоды в Москве...');
+
+                    fetch('https://wttr.in/Moscow?format=4&lang=ru')
+                        .then(response => response.text())
+                        .then(data => {
+                            terminalOutput.lastChild.remove();
+                            printLine('Погода в Москве:');
+                            printLine(data.trim());
+                        })
+                        .catch(() => {
+                            terminalOutput.lastChild.remove();
+                            printLine('❌ Не удалось загрузить погоду.');
+                        });
+                } else if (cmd === 'help') {
+                    printLine('Команды:');
+                    printLine('  cd <страница>    — перейти на раздел (about, projects, и т.д.)');
+                    printLine('  goto /путь.html  — перейти по внутреннему пути');
+                    printLine('  time             — показать текущее время (МСК)');
+                    printLine('  clear            — очистить терминал');
+                } else if (cmd === 'clear') {
+                    terminalOutput.innerHTML = '';
+
+                } else {
+                    printLine(`Команда "${cmd}" не найдена. Введите "help".`);
+                }
+
+                terminalOutput.scrollTop = terminalOutput.scrollHeight;
+            }
+        });
+
+        terminalInput.focus();
+
+        // === COUNTDOWN TO MAY 31, 2026 ===
+        const mayCountdownEl = document.getElementById('may-countdown');
+
+        function updateMayCountdown() {
+            const may2026UTC = Date.UTC(2026, 4, 30, 21, 0, 0);
+            const now = Date.now();
+            const diff = may2026UTC - now;
+
+            if (diff <= 0) {
+                mayCountdownEl.textContent = 'До конца учебного года!';
+            } else {
+                const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+                const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+                const secs = Math.floor((diff % (1000 * 60)) / 1000);
+                mayCountdownEl.textContent = `До 31 мая: ${days}д ${hours}ч ${mins}м ${secs}с`;
+            }
+        }
+
+        // === HOLIDAY COUNTDOWN (based on school breaks) ===
+        const holidayCountdownEl = document.getElementById('holiday-countdown');
+
+        function updateHolidayCountdown() {
+            const now = new Date();
+            let currentYear = now.getFullYear();
+
+            const autumnBreakStart = Date.UTC(currentYear, 9, 24, 21); // Oct 25 MSK
+            const autumnBreakEnd = Date.UTC(currentYear, 10, 1, 21); // Nov 2 MSK
+            const winterBreakStart = Date.UTC(currentYear, 11, 30, 21); // Dec 31 MSK
+            const winterBreakEnd = Date.UTC(currentYear + 1, 0, 10, 21); // Jan 11 MSK
+            const springBreakStart = Date.UTC(currentYear + 1, 2, 27, 21); // Mar 28 MSK
+            const springBreakEnd = Date.UTC(currentYear + 1, 3, 4, 21); // Apr 5 MSK
+
+            const nowUTC = Date.now();
+            let holidayText = "";
+            let diff = 0;
+            let isActive = false;
+
+            if (nowUTC >= autumnBreakStart && nowUTC < autumnBreakEnd) {
+                holidayText = "🍁 Осенние каникулы! Закончатся через";
+                diff = autumnBreakEnd - nowUTC;
+                isActive = true;
+            } else if (nowUTC >= winterBreakStart && nowUTC < winterBreakEnd) {
+                holidayText = "🎄 Зимние каникулы! Закончатся через";
+                diff = winterBreakEnd - nowUTC;
+                isActive = true;
+            } else if (nowUTC >= springBreakStart && nowUTC < springBreakEnd) {
+                holidayText = "🌼 Весенние каникулы! Закончатся через";
+                diff = springBreakEnd - nowUTC;
+                isActive = true;
+            } else {
+                let nextStart = autumnBreakStart;
+                if (nowUTC >= autumnBreakEnd) nextStart = winterBreakStart;
+                if (nowUTC >= winterBreakEnd) nextStart = springBreakStart;
+                if (nowUTC >= springBreakEnd) {
+                    nextStart = Date.UTC(currentYear + 1, 9, 24, 21);
+                }
+                diff = nextStart - nowUTC;
+
+                if (nextStart === autumnBreakStart || nextStart === Date.UTC(currentYear + 1, 9, 24, 21)) {
+                    holidayText = "Следующие каникулы (Осенние) через";
+                } else if (nextStart === winterBreakStart) {
+                    holidayText = "Следующие каникулы (Зимние) через";
+                } else if (nextStart === springBreakStart) {
+                    holidayText = "Следующие каникулы (Весенние) через";
+                }
+            }
+
+            if (diff <= 0) {
+                holidayCountdownEl.textContent = "Счастливых каникул!";
+            } else {
+                const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+                holidayCountdownEl.textContent = `${holidayText} ${days} дней`;
+            }
+
+            holidayCountdownEl.style.color = isActive ? '#ff9800' : '#4fc3dc';
+        }
+
+        setInterval(updateMayCountdown, 1000);
+        setInterval(updateHolidayCountdown, 60000);
+
+        updateMayCountdown();
+        updateHolidayCountdown();
     </script>
 
 </body>
+
 </html>

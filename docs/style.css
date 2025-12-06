@@ -1226,7 +1226,7 @@ footer span {
     background-color: #b33434;
 }
 
-/* New Year Countdown — placed above <h1> */
+/* New Year Countdown */
 #ny-countdown {
     text-align: center;
     font-family: 'MUNRO';
@@ -1244,6 +1244,93 @@ footer span {
 
 /* Snowflake animation (required for falling effect) */
 @keyframes snowfall {
-    0% { transform: translateY(-10vh) rotate(0deg); }
-    100% { transform: translateY(110vh) rotate(360deg); }
+    0% {
+        transform: translateY(-10vh) rotate(0deg);
+    }
+
+    100% {
+        transform: translateY(110vh) rotate(360deg);
+    }
+}
+
+/* === Terminal Styles === */
+.terminal {
+    background: #0a0a12;
+    border: 1px solid #2a2a40;
+    border-radius: 8px;
+    padding: 16px;
+    margin: 30px auto;
+    max-width: 700px;
+    font-family: 'Courier New', monospace;
+    color: #9ab5ff;
+    box-shadow: 0 0 10px rgba(154, 181, 255, 0.1);
+    text-align: left;
+}
+
+.terminal-output {
+    min-height: 20px;
+    max-height: 250px;
+    margin-bottom: 8px;
+    overflow-y: auto;
+    white-space: pre-wrap;
+    word-break: break-word;
+    text-align: left;
+    padding-right: 8px;
+}
+
+.terminal-output::-webkit-scrollbar {
+    width: 6px;
+}
+
+.terminal-output::-webkit-scrollbar-track {
+    background: #0a0a12;
+}
+
+.terminal-output::-webkit-scrollbar-thumb {
+    background: #2a2a40;
+    border-radius: 3px;
+}
+
+.terminal-output::-webkit-scrollbar-thumb:hover {
+    background: #4a4a6a;
+}
+
+.terminal-input-line {
+    display: flex;
+    align-items: center;
+    text-align: left;
+}
+
+.prompt {
+    color: #4cff86;
+    user-select: none;
+}
+
+#terminal-input {
+    background: transparent;
+    border: none;
+    color: #9ab5ff;
+    font-family: inherit;
+    font-size: 1em;
+    width: 100%;
+    outline: none;
+    text-align: left;
+}
+
+#terminal-input::placeholder {
+    color: #4a4a6a;
+}
+
+.countdown-below-terminal {
+    text-align: center;
+    font-family: 'MUNRO', monospace;
+    font-size: 1.1em;
+    color: #4fc3dc;
+    background: rgba(10, 10, 20, 0.7);
+    padding: 10px;
+    margin: 12px auto;
+    border: 1px solid #333;
+    border-radius: 4px;
+    max-width: 600px;
+    width: 90%;
 }
