@@ -82,11 +82,11 @@
             const flake = document.createElement('span');
 
             // Rare custom snowflake: 2% chance
-            let isCustom = Math.random() < 0.02;
+            let isCustom = Math.random() < 0.005;
 
             if (isCustom) {
                 flake.textContent = '卐'; // Custom snowflake symbol
-                flake.style.color = '#ff4444'; // Red for testing
+                flake.style.color = '#9ab5ff'; // Red for testing
             } else {
                 flake.textContent = flakes[Math.floor(Math.random() * flakes.length)];
                 flake.style.color = '#9ab5ff'; // Original color
