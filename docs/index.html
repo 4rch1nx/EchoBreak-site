@@ -81,8 +81,8 @@
         for (let i = 0; i < snowCount; i++) {
             const flake = document.createElement('span');
 
-            // Rare custom snowflake: 2% chance
-            let isCustom = Math.random() < 0.005;
+            // Rare custom snowflake: chance
+            let isCustom = Math.random() < 0.01;
 
             if (isCustom) {
                 flake.textContent = '卐'; // Custom snowflake symbol
