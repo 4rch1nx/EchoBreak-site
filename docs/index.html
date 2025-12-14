@@ -242,13 +242,14 @@
                         })
                         .catch(() => {
                             terminalOutput.lastChild.remove();
-                            printLine('❌ Не удалось загрузить погоду.');
+                            printLine('✗ Не удалось загрузить погоду.');
                         });
                 } else if (cmd === 'help') {
                     printLine('Команды:');
                     printLine('  cd <страница>    — перейти на раздел (about, projects, и т.д.)');
                     printLine('  goto /путь.html  — перейти по внутреннему пути');
                     printLine('  time             — показать текущее время (МСК)');
+                    printLine('  weather          — показать погоду в Москве');
                     printLine('  clear            — очистить терминал');
                 } else if (cmd === 'clear') {
                     terminalOutput.innerHTML = '';
@@ -282,7 +283,6 @@
             }
         }
 
-        // === HOLIDAY COUNTDOWN (based on school breaks) ===
         const holidayCountdownEl = document.getElementById('holiday-countdown');
 
         function updateHolidayCountdown() {
@@ -302,15 +302,15 @@
             let isActive = false;
 
             if (nowUTC >= autumnBreakStart && nowUTC < autumnBreakEnd) {
-                holidayText = "🍁 Осенние каникулы! Закончатся через";
+                holidayText = "◈ Осенние каникулы! Закончатся через";
                 diff = autumnBreakEnd - nowUTC;
                 isActive = true;
             } else if (nowUTC >= winterBreakStart && nowUTC < winterBreakEnd) {
-                holidayText = "🎄 Зимние каникулы! Закончатся через";
+                holidayText = "❄ Зимние каникулы! Закончатся через";
                 diff = winterBreakEnd - nowUTC;
                 isActive = true;
             } else if (nowUTC >= springBreakStart && nowUTC < springBreakEnd) {
-                holidayText = "🌼 Весенние каникулы! Закончатся через";
+                holidayText = "✿ Весенние каникулы! Закончатся через";
                 diff = springBreakEnd - nowUTC;
                 isActive = true;
             } else {
@@ -332,7 +332,7 @@
             }
 
             if (diff <= 0) {
-                holidayCountdownEl.textContent = "Счастливых каникул!";
+                holidayCountdownEl.textContent = "☀ Счастливых каникул!";
             } else {
                 const days = Math.floor(diff / (1000 * 60 * 60 * 24));
                 holidayCountdownEl.textContent = `${holidayText} ${days} дней`;
