@@ -48,10 +48,19 @@ header #logo-link.active {
     border-bottom: 2px solid #e33533;
 }
 
+header .account-icon img {
+    width: 32px;
+    height: 32px;
+    display: block;
+    border-radius: 50%;
+    align-items: center;
+}
+
 nav ul {
     list-style: none;
     display: flex;
     gap: 20px;
+    align-items: center;
 }
 
 nav ul li a {

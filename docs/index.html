@@ -13,16 +13,20 @@
 
     <!-- Header -->
     <header>
-        <a href="personal_account.html" id="logo-link" class="active">
+        <a href="index.html" id="logo-link" class="active">
             <img src="images/logo.png" alt="EchoBreak Logo" class="logo">
         </a>
         <nav>
             <ul>
-                <space></space>
                 <li><a href="about.html">О нас</a></li>
                 <li><a href="projects.html">Проекты</a></li>
                 <li><a href="fanfics.html">Комьюнити</a></li>
                 <li><a href="crypto.html">Крипта</a></li>
+                <li>
+                    <a href="personal_account.html" class="account-icon">
+                        <img src="images/avatar-placeholder.png" alt="Аккаунт">
+                    </a>
+                </li>
             </ul>
         </nav>
     </header>
@@ -57,7 +61,7 @@
 
     <!-- Footer -->
     <footer>
-        <p>EchoBreak, 2025</p>
+        <p>EchoBreak © 2025</p>
     </footer>
 
     <!-- Falling Snow Container -->
@@ -80,30 +84,20 @@
 
         for (let i = 0; i < snowCount; i++) {
             const flake = document.createElement('span');
-
-            // Rare custom snowflake: chance
-            let isCustom = Math.random() < 0.01;
-
-            if (isCustom) {
-                flake.textContent = '卐'; // Custom snowflake symbol
-                flake.style.color = '#9ab5ff'; // Red for testing
-            } else {
-                flake.textContent = flakes[Math.floor(Math.random() * flakes.length)];
-                flake.style.color = '#9ab5ff'; // Original color
-            }
-
+            flake.textContent = flakes[Math.floor(Math.random() * flakes.length)];
             const size = 8 + Math.random() * 10;
             const left = Math.random() * 100;
             const duration = 6 + Math.random() * 10;
             const opacity = 0.4 + Math.random() * 0.6;
             const delay = Math.random() * 5;
 
-            flake.style.cssText += `
+            flake.style.cssText = `
                 position: absolute;
                 top: -20px;
                 left: ${left}vw;
                 font-size: ${size}px;
                 opacity: ${opacity};
+                color: #9ab5ff;
                 font-family: monospace;
                 user-select: none;
                 animation: snowfall ${duration}s linear infinite;
@@ -233,7 +227,7 @@
                 } else if (cmd === 'weather') {
                     printLine('Загрузка погоды в Москве...');
 
-                    fetch('https://wttr.in/Moscow?format=4&lang=ru  ')
+                    fetch('https://wttr.in/Moscow?format=4&lang=ru')
                         .then(response => response.text())
                         .then(data => {
                             terminalOutput.lastChild.remove();
@@ -242,14 +236,14 @@
                         })
                         .catch(() => {
                             terminalOutput.lastChild.remove();
-                            printLine('✗ Не удалось загрузить погоду.');
+                            printLine('❌ Не удалось загрузить погоду.');
                         });
                 } else if (cmd === 'help') {
                     printLine('Команды:');
                     printLine('  cd <страница>    — перейти на раздел (about, projects, и т.д.)');
                     printLine('  goto /путь.html  — перейти по внутреннему пути');
                     printLine('  time             — показать текущее время (МСК)');
-                    printLine('  weather          — показать погоду в Москве');
+                    printLine('  weather          — показать погоду (МСК)');
                     printLine('  clear            — очистить терминал');
                 } else if (cmd === 'clear') {
                     terminalOutput.innerHTML = '';
@@ -283,6 +277,7 @@
             }
         }
 
+        // === HOLIDAY COUNTDOWN (based on school breaks) ===
         const holidayCountdownEl = document.getElementById('holiday-countdown');
 
         function updateHolidayCountdown() {
@@ -302,15 +297,15 @@
             let isActive = false;
 
             if (nowUTC >= autumnBreakStart && nowUTC < autumnBreakEnd) {
-                holidayText = "◈ Осенние каникулы! Закончатся через";
+                holidayText = "🍁 Осенние каникулы! Закончатся через";
                 diff = autumnBreakEnd - nowUTC;
                 isActive = true;
             } else if (nowUTC >= winterBreakStart && nowUTC < winterBreakEnd) {
-                holidayText = "❄ Зимние каникулы! Закончатся через";
+                holidayText = "🎄 Зимние каникулы! Закончатся через";
                 diff = winterBreakEnd - nowUTC;
                 isActive = true;
             } else if (nowUTC >= springBreakStart && nowUTC < springBreakEnd) {
-                holidayText = "✿ Весенние каникулы! Закончатся через";
+                holidayText = "🌼 Весенние каникулы! Закончатся через";
                 diff = springBreakEnd - nowUTC;
                 isActive = true;
             } else {
@@ -332,7 +327,7 @@
             }
 
             if (diff <= 0) {
-                holidayCountdownEl.textContent = "☀ Счастливых каникул!";
+                holidayCountdownEl.textContent = "Счастливых каникул!";
             } else {
                 const days = Math.floor(diff / (1000 * 60 * 60 * 24));
                 holidayCountdownEl.textContent = `${holidayText} ${days} дней`;

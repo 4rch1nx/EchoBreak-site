@@ -13,16 +13,20 @@
 <body>
     <!-- Header -->
     <header>
-        <a href="index.html" id="logo-link" class="active">
+        <a href="index.html" id="logo-link">
             <img src="images/logo.png" alt="EchoBreak Logo" class="logo">
         </a>
         <nav>
             <ul>
-                <space></space>
                 <li><a href="about.html">О нас</a></li>
                 <li><a href="projects.html">Проекты</a></li>
                 <li><a href="fanfics.html">Комьюнити</a></li>
                 <li><a href="crypto.html">Крипта</a></li>
+                <li>
+                    <a href="personal_account.html" class="account-icon">
+                        <img src="images/avatar-placeholder.png" alt="Аккаунт">
+                    </a>
+                </li>
             </ul>
         </nav>
     </header>
@@ -57,8 +61,9 @@
         </div>
     </main>
     <footer>
-        <p>EchoBreak, 2025</p>
+        <p>EchoBreak © 2025</p>
     </footer>
+
     <div id="snow-container"></div>
     <script>
         const API_BASE = 'https://EchoBreakStatus.pythonanywhere.com';
