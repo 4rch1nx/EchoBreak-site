@@ -109,72 +109,57 @@
     </footer>
 
     <script>
-        const API_BASE = 'https://EchoBreakStatus.pythonanywhere.com';
-        let currentUser = null;
+    const API_BASE = 'https://EchoBreakStatus.pythonanywhere.com';
+    // currentUser is no longer used or checked
 
-        document.addEventListener('DOMContentLoaded', async function () {
-            const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
-            currentUser = localStorage.getItem('userName');
-            if (!isLoggedIn || !currentUser) {
-                alert('Вы не вошли в систему');
-                window.location.href = 'login.html';
-                return;
-            }
+    document.addEventListener('DOMContentLoaded', async function () {
+        // Removed login check and redirect
 
-            try {
-                const resp = await fetch(`${API_BASE}/api/user-data?name=${encodeURIComponent(currentUser)}`);
-                if (!resp.ok) throw new Error('Пользователь не найден');
-                const { user_data: userData } = await resp.json();
+        try {
+            await loadFanfics();
+            document.getElementById('viewStarredButton')?.addEventListener('click', () => alert('Функция "Избранное" доступна только авторизованным пользователям.'));
+            document.getElementById('viewStatsButton')?.addEventListener('click', () => showStatsModal());
 
-                if (!userData.userToken || userData.userToken === 'rejected') {
-                    alert('У вас нет доступа к фанфикам. Обратитесь к администратору.');
-                    window.location.href = 'index.html';
-                    return;
+            document.querySelectorAll('.close-modal').forEach(btn => {
+                btn.onclick = () => btn.closest('.modal').style.display = 'none';
+            });
+            window.onclick = (e) => {
+                if (e.target.classList.contains('modal')) {
+                    e.target.style.display = 'none';
                 }
+            };
+        } catch (err) {
+            console.error('Ошибка при загрузке фанфиков:', err);
+            document.getElementById('gistsList').textContent = `Ошибка: ${err.message}`;
+        }
+    });
 
-                await loadFanfics();
-                document.getElementById('viewStarredButton')?.addEventListener('click', () => loadStarredFanfics());
-                document.getElementById('viewStatsButton')?.addEventListener('click', () => showStatsModal());
+    async function loadFanfics() {
+        const container = document.getElementById('gistsList');
+        container.innerHTML = 'Загрузка фанфиков из БД...';
 
-                document.querySelectorAll('.close-modal').forEach(btn => {
-                    btn.onclick = () => btn.closest('.modal').style.display = 'none';
-                });
-                window.onclick = (e) => {
-                    if (e.target.classList.contains('modal')) {
-                        e.target.style.display = 'none';
-                    }
-                };
-            } catch (err) {
-                alert(`Ошибка: ${err.message}`);
-                window.location.href = 'login.html';
-            }
-        });
+        try {
+            const resp = await fetch(`${API_BASE}/api/fanfics`);
+            if (!resp.ok) throw new Error('Не удалось загрузить фанфики');
+            const fanfics = await resp.json();
+            container.innerHTML = '';
 
-        async function loadFanfics() {
-            const container = document.getElementById('gistsList');
-            container.innerHTML = 'Загрузка фанфиков из БД...';
+            for (const f of fanfics) {
+                // Removed stats call that requires currentUser
+                const stats = { views: 0, uniqueViews: 0 }; // Placeholder or fetch public stats if API allows
+                const metaResp = await fetch(`${API_BASE}/api/fanfic-content?raw_url=${encodeURIComponent(f.raw_url)}`);
+                const { meta } = metaResp.ok ? await metaResp.json() : { meta: {} };
 
-            try {
-                const resp = await fetch(`${API_BASE}/api/fanfics`);
-                if (!resp.ok) throw new Error('Не удалось загрузить фанфики');
-                const fanfics = await resp.json();
-                container.innerHTML = '';
+                const author = meta.author || 'Неизвестен';
+                const img = meta['reference-image'] && meta['reference-image'].startsWith('data:image/')
+                    ? meta['reference-image']
+                    : 'images/placeholder.jpg';
 
-                for (const f of fanfics) {
-                    const stats = await fetch(`${API_BASE}/api/fanfic-stats?gist_id=${f.id}&user_name=${currentUser}`).then(r => r.json());
-                    const metaResp = await fetch(`${API_BASE}/api/fanfic-content?raw_url=${encodeURIComponent(f.raw_url)}`);
-                    const { meta } = metaResp.ok ? await metaResp.json() : { meta: {} };
+                const nsfwBadge = meta.nsfw === "true" ? '<span class="nsfw-badge">NSFW</span>' : '';
 
-                    const author = meta.author || 'Неизвестен';
-                    const img = meta['reference-image'] && meta['reference-image'].startsWith('data:image/')
-                        ? meta['reference-image']
-                        : 'images/placeholder.jpg';
-
-                    const nsfwBadge = meta.nsfw === "true" ? '<span class="nsfw-badge">NSFW</span>' : '';
-
-                    const card = document.createElement('div');
-                    card.className = 'fanfic-card';
-                    card.innerHTML = `
+                const card = document.createElement('div');
+                card.className = 'fanfic-card';
+                card.innerHTML = `
                     <div style="position:relative;">
                         <img src="${img}" alt="Обложка" class="fanfic-image" onerror="this.src='images/placeholder.jpg'">
                         ${nsfwBadge}
@@ -190,320 +175,251 @@
                         </button>
                     </div>
                 `;
-                    card.querySelector('.read-button').onclick = () =>
-                        loadFanficContent(f.id, f.raw_url, f.title, f.created_at, author, stats);
-                    container.appendChild(card);
-                }
-            } catch (err) {
-                container.textContent = `Ошибка: ${err.message}`;
+                card.querySelector('.read-button').onclick = () =>
+                    loadFanficContent(f.id, f.raw_url, f.title, f.created_at, author, stats);
+                container.appendChild(card);
             }
+        } catch (err) {
+            container.textContent = `Ошибка: ${err.message}`;
         }
+    }
 
-        async function loadFanficContent(gistId, rawUrl, title, createdAt, author, stats) {
-            try {
-                const resp = await fetch(`${API_BASE}/api/fanfic-content?raw_url=${encodeURIComponent(rawUrl)}`);
-                if (!resp.ok) throw new Error('Фанфик недоступен');
-                const { meta, body } = await resp.json();
+    async function loadFanficContent(gistId, rawUrl, title, createdAt, author, stats) {
+        try {
+            const resp = await fetch(`${API_BASE}/api/fanfic-content?raw_url=${encodeURIComponent(rawUrl)}`);
+            if (!resp.ok) throw new Error('Фанфик недоступен');
+            const { meta, body } = await resp.json();
 
-                if (meta.nsfw === "true") {
-                    const modal = document.getElementById('nsfwWarningModal');
-                    modal.style.display = 'block';
+            if (meta.nsfw === "true") {
+                const modal = document.getElementById('nsfwWarningModal');
+                modal.style.display = 'block';
 
-                    const confirmBtn = document.getElementById('showNsfwContent');
-                    const cancelBtn = document.getElementById('cancelNsfw');
+                const confirmBtn = document.getElementById('showNsfwContent');
+                const cancelBtn = document.getElementById('cancelNsfw');
 
-                    const onConfirm = () => {
-                        modal.style.display = 'none';
-                        renderFanficContent(gistId, title, createdAt, author, stats, meta, body);
-                        cleanup();
-                    };
-                    const onCancel = () => {
-                        modal.style.display = 'none';
-                        cleanup();
-                    };
-                    const cleanup = () => {
-                        confirmBtn.removeEventListener('click', onConfirm);
-                        cancelBtn.removeEventListener('click', onCancel);
-                    };
-
-                    confirmBtn.addEventListener('click', onConfirm);
-                    cancelBtn.addEventListener('click', onCancel);
-                } else {
+                const onConfirm = () => {
+                    modal.style.display = 'none';
                     renderFanficContent(gistId, title, createdAt, author, stats, meta, body);
-                }
-            } catch (err) {
-                alert(`Ошибка загрузки: ${err.message}`);
-            }
-        }
+                    cleanup();
+                };
+                const onCancel = () => {
+                    modal.style.display = 'none';
+                    cleanup();
+                };
+                const cleanup = () => {
+                    confirmBtn.removeEventListener('click', onConfirm);
+                    cancelBtn.removeEventListener('click', onCancel);
+                };
 
-        function renderFanficContent(gistId, title, createdAt, author, stats, meta, body) {
-            let html = '';
-            const lines = body.split('\n');
-            let inList = false, inOrderedList = false;
-
-            for (let line of lines) {
-                line = line.trim();
-                if (line.startsWith('###')) {
-                    html += `<h4>${line.slice(3).trim()}</h4>`;
-                } else if (line.startsWith('##')) {
-                    html += `<h3>${line.slice(2).trim()}</h3>`;
-                } else if (line.startsWith('#')) {
-                    html += `<h2>${line.slice(1).trim()}</h2>`;
-                } else if (line.startsWith('* ') || line.startsWith('- ')) {
-                    if (!inList) { html += '<ul>'; inList = true; }
-                    html += `<li>${line.slice(2).trim()}</li>`;
-                } else if (/^\d+\.\s/.test(line)) {
-                    if (!inOrderedList) { html += '<ol>'; inOrderedList = true; }
-                    html += `<li>${line.replace(/^\d+\.\s*/, '').trim()}</li>`;
-                } else if (line === '---' || line === '***') {
-                    html += '<hr>';
-                } else if (line.startsWith('>')) {
-                    html += `<blockquote>${line.slice(1).trim()}</blockquote>`;
-                } else if (line) {
-                    if (inList) { html += '</ul>'; inList = false; }
-                    if (inOrderedList) { html += '</ol>'; inOrderedList = false; }
-                    html += `<p>${line}</p>`;
-                } else {
-                    if (inList) { html += '</ul>'; inList = false; }
-                    if (inOrderedList) { html += '</ol>'; inOrderedList = false; }
-                    html += '<br>';
-                }
-            }
-            if (inList) html += '</ul>';
-            if (inOrderedList) html += '</ol>';
-
-            document.getElementById('fanficTitle').textContent = title;
-            document.getElementById('fanficAuthorDate').textContent =
-                `Автор: ${author} | Дата выхода: ${new Date(createdAt).toLocaleString('ru-RU')}`;
-            document.getElementById('fanficStats').textContent =
-                `${stats.views} просмотров (${stats.uniqueViews} уникальных)`;
-            document.getElementById('fanficContent').innerHTML = html;
-
-            fetch(`${API_BASE}/api/fanfic-stats`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ gist_id: gistId, user_name: currentUser })
-            });
-
-            const starBtn = document.getElementById('starButton');
-            fetch(`${API_BASE}/api/user-data?name=${encodeURIComponent(currentUser)}`)
-                .then(r => r.json())
-                .then(({ user_data }) => {
-                    const isStarred = (user_data.starredFanfics || []).includes(gistId);
-                    starBtn.textContent = isStarred ? '★' : '☆';
-                    starBtn.onclick = () => toggleStar(gistId, starBtn);
-                });
-
-            document.getElementById('viewAuthorButton').onclick = () => viewAuthorHistory(author);
-            document.getElementById('toggleReadingMode').onclick = function () {
-                const modal = document.querySelector('.modal-content.full-screen');
-                modal.classList.toggle('light-mode');
-                this.textContent = modal.classList.contains('light-mode') ? '☼' : '◐';
-            };
-
-            document.getElementById('fanficModal').style.display = 'block';
-        }
-
-        async function toggleStar(gistId, button) {
-            const userResp = await fetch(`${API_BASE}/api/user-data?name=${encodeURIComponent(currentUser)}`);
-            const { user_data } = await userResp.json();
-            const starred = user_data.starredFanfics || [];
-            const isStarred = starred.includes(gistId);
-
-            if (isStarred) {
-                starred.splice(starred.indexOf(gistId), 1);
-                button.textContent = '☆';
+                confirmBtn.addEventListener('click', onConfirm);
+                cancelBtn.addEventListener('click', onCancel);
             } else {
-                starred.push(gistId);
-                button.textContent = '★';
+                renderFanficContent(gistId, title, createdAt, author, stats, meta, body);
             }
+        } catch (err) {
+            alert(`Ошибка загрузки: ${err.message}`);
+        }
+    }
 
-            await fetch(`${API_BASE}/api/update-user-data`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ name: currentUser, updates: { starredFanfics: starred } })
-            });
+    function renderFanficContent(gistId, title, createdAt, author, stats, meta, body) {
+        let html = '';
+        const lines = body.split('\n');
+        let inList = false, inOrderedList = false;
+
+        for (let line of lines) {
+            line = line.trim();
+            if (line.startsWith('###')) {
+                html += `<h4>${line.slice(3).trim()}</h4>`;
+            } else if (line.startsWith('##')) {
+                html += `<h3>${line.slice(2).trim()}</h3>`;
+            } else if (line.startsWith('#')) {
+                html += `<h2>${line.slice(1).trim()}</h2>`;
+            } else if (line.startsWith('* ') || line.startsWith('- ')) {
+                if (!inList) { html += '<ul>'; inList = true; }
+                html += `<li>${line.slice(2).trim()}</li>`;
+            } else if (/^\d+\.\s/.test(line)) {
+                if (!inOrderedList) { html += '<ol>'; inOrderedList = true; }
+                html += `<li>${line.replace(/^\d+\.\s*/, '').trim()}</li>`;
+            } else if (line === '---' || line === '***') {
+                html += '<hr>';
+            } else if (line.startsWith('>')) {
+                html += `<blockquote>${line.slice(1).trim()}</blockquote>`;
+            } else if (line) {
+                if (inList) { html += '</ul>'; inList = false; }
+                if (inOrderedList) { html += '</ol>'; inOrderedList = false; }
+                html += `<p>${line}</p>`;
+            } else {
+                if (inList) { html += '</ul>'; inList = false; }
+                if (inOrderedList) { html += '</ol>'; inOrderedList = false; }
+                html += '<br>';
+            }
+        }
+        if (inList) html += '</ul>';
+        if (inOrderedList) html += '</ol>';
+
+        document.getElementById('fanficTitle').textContent = title;
+        document.getElementById('fanficAuthorDate').textContent =
+            `Автор: ${author} | Дата выхода: ${new Date(createdAt).toLocaleString('ru-RU')}`;
+        // Use placeholder stats since no user context
+        document.getElementById('fanficStats').textContent =
+            `${stats.views || '—'} просмотров (${stats.uniqueViews || '—'} уникальных)`;
+
+        // Removed view-tracking POST request (requires user)
+        // fetch(`${API_BASE}/api/fanfic-stats`, { ... });
+
+        // Star button disabled for guests
+        const starBtn = document.getElementById('starButton');
+        starBtn.textContent = '☆';
+        starBtn.onclick = () => alert('Добавление в избранное доступно только авторизованным пользователям.');
+
+        document.getElementById('viewAuthorButton').onclick = () => viewAuthorHistory(author);
+        document.getElementById('toggleReadingMode').onclick = function () {
+            const modal = document.querySelector('.modal-content.full-screen');
+            modal.classList.toggle('light-mode');
+            this.textContent = modal.classList.contains('light-mode') ? '☼' : '◐';
+        };
+
+        document.getElementById('fanficModal').style.display = 'block';
+    }
+
+    // Disabled toggleStar (not applicable without user)
+    function toggleStar() {
+        alert('Добавление в избранное доступно только авторизованным пользователям.');
+    }
+
+    // Disabled starred fanfics list
+    function loadStarredFanfics() {
+        alert('Избранные фанфики доступны только авторизованным пользователям.');
+    }
+
+    async function viewAuthorHistory(authorName) {
+        if (!authorName || authorName === 'Неизвестен') {
+            alert('Информация об авторе недоступна.');
+            return;
         }
 
-        async function loadStarredFanfics() {
-            const modal = document.getElementById('starredModal');
-            const list = document.getElementById('starredFanficsList');
-            list.innerHTML = 'Загрузка...';
-            modal.style.display = 'block';
+        const modal = document.getElementById('authorModal');
+        const nameEl = document.getElementById('authorName');
+        const statsEl = document.getElementById('authorStats');
+        const listEl = document.getElementById('authorFanfics');
 
-            try {
-                const userResp = await fetch(`${API_BASE}/api/user-data?name=${encodeURIComponent(currentUser)}`);
-                const { user_data } = await userResp.json();
-                const starredIds = user_data.starredFanfics || [];
+        nameEl.textContent = authorName;
+        statsEl.innerHTML = 'Загрузка...';
+        listEl.innerHTML = '';
+        modal.style.display = 'block';
 
-                if (starredIds.length === 0) {
-                    list.innerHTML = '<p>У вас пока нет избранных фанфиков.</p>';
-                    return;
-                }
+        try {
+            const fanficsResp = await fetch(`${API_BASE}/api/fanfics`);
+            if (!fanficsResp.ok) throw new Error('Не удалось загрузить список фанфиков');
+            const fanfics = await fanficsResp.json();
 
-                const fanficsResp = await fetch(`${API_BASE}/api/fanfics`);
-                const allFanfics = await fanficsResp.json();
-                const starredFanfics = allFanfics.filter(f => starredIds.includes(f.id));
+            const authorWorks = [];
 
-                list.innerHTML = '';
-                for (const f of starredFanfics) {
-                    const stats = await fetch(`${API_BASE}/api/fanfic-stats?gist_id=${f.id}`).then(r => r.json());
+            for (const f of fanfics) {
+                try {
                     const metaResp = await fetch(`${API_BASE}/api/fanfic-content?raw_url=${encodeURIComponent(f.raw_url)}`);
-                    const { meta } = metaResp.ok ? await metaResp.json() : { meta: {} };
-                    const author = meta.author || 'Неизвестен';
+                    if (!metaResp.ok) continue;
 
-                    const el = document.createElement('div');
-                    el.className = 'fanfic-card starred-item';
-                    el.innerHTML = `
-                    <img src="${meta['reference-image'] || 'images/placeholder.jpg'}" 
-                         alt="Обложка" class="fanfic-image" onerror="this.src='images/placeholder.jpg'">
-                    <h4>${f.title}</h4>
-                    <p>Автор: ${author}</p>
-                    <p>Дата: ${new Date(f.created_at).toLocaleString('ru-RU')}</p>
-                    <p>${stats.views} просмотров (${stats.uniqueViews} уникальных)</p>
-                    <button class="read-button" data-id="${f.id}" data-title="${f.title}" 
-                        data-raw="${f.raw_url}" data-author="${author}" data-date="${f.created_at}">Читать</button>
-                    <button class="remove-star-button" data-id="${f.id}">Удалить из избранного</button>
-                `;
-                    el.querySelector('.read-button').onclick = () =>
-                        loadFanficContent(f.id, f.raw_url, f.title, f.created_at, author, stats);
-                    el.querySelector('.remove-star-button').onclick = async () => {
-                        await toggleStar(f.id, { textContent: '★' });
-                        loadStarredFanfics();
-                    };
-                    list.appendChild(el);
+                    const { meta, body } = await metaResp.json();
+                    if (!meta || !meta.author) continue;
+
+                    if (meta.author.trim() === authorName.trim()) {
+                        const stats = await fetch(`${API_BASE}/api/fanfic-stats?gist_id=${f.id}`).then(r => r.json());
+                        const wordCount = body ? body.split(/\s+/).filter(w => w).length : 0;
+                        authorWorks.push({ ...f, meta, stats, wordCount });
+                    }
+                } catch (e) {
+                    console.warn(`Не удалось обработать фанфик ${f.id}:`, e.message);
+                    continue;
                 }
-            } catch (err) {
-                list.innerHTML = `<p>Ошибка: ${err.message}</p>`;
             }
-        }
 
-        async function viewAuthorHistory(authorName) {
-            if (!authorName || authorName === 'Неизвестен') {
-                alert('Информация об авторе недоступна.');
+            if (authorWorks.length === 0) {
+                statsEl.innerHTML = `<p>Фанфики от "${authorName}" не найдены.</p>`;
                 return;
             }
 
-            const modal = document.getElementById('authorModal');
-            const nameEl = document.getElementById('authorName');
-            const statsEl = document.getElementById('authorStats');
-            const listEl = document.getElementById('authorFanfics');
+            const total = authorWorks.length;
+            const words = authorWorks.reduce((sum, f) => sum + f.wordCount, 0);
+            const views = authorWorks.reduce((sum, f) => sum + f.stats.views, 0);
+            const unique = authorWorks.reduce((sum, f) => sum + f.stats.uniqueViews, 0);
+            const avgWords = total ? Math.round(words / total) : 0;
+            const firstPubDate = new Date(Math.min(...authorWorks.map(f => new Date(f.created_at))));
+            const first = firstPubDate.toLocaleDateString('ru-RU');
 
-            nameEl.textContent = authorName;
-            statsEl.innerHTML = 'Загрузка...';
-            listEl.innerHTML = '';
-            modal.style.display = 'block';
-
-            try {
-                const fanficsResp = await fetch(`${API_BASE}/api/fanfics`);
-                if (!fanficsResp.ok) throw new Error('Не удалось загрузить список фанфиков');
-                const fanfics = await fanficsResp.json();
-
-                const authorWorks = [];
-
-                for (const f of fanfics) {
-                    try {
-                        const metaResp = await fetch(`${API_BASE}/api/fanfic-content?raw_url=${encodeURIComponent(f.raw_url)}`);
-                        if (!metaResp.ok) continue;
-
-                        const { meta, body } = await metaResp.json();
-                        if (!meta || !meta.author) continue;
-
-                        if (meta.author.trim() === authorName.trim()) {
-                            const stats = await fetch(`${API_BASE}/api/fanfic-stats?gist_id=${f.id}`).then(r => r.json());
-                            const wordCount = body ? body.split(/\s+/).filter(w => w).length : 0;
-                            authorWorks.push({ ...f, meta, stats, wordCount });
-                        }
-                    } catch (e) {
-                        console.warn(`Не удалось обработать фанфик ${f.id}:`, e.message);
-                        continue;
-                    }
-                }
-
-                if (authorWorks.length === 0) {
-                    statsEl.innerHTML = `<p>Фанфики от "${authorName}" не найдены.</p>`;
-                    return;
-                }
-
-                const total = authorWorks.length;
-                const words = authorWorks.reduce((sum, f) => sum + f.wordCount, 0);
-                const views = authorWorks.reduce((sum, f) => sum + f.stats.views, 0);
-                const unique = authorWorks.reduce((sum, f) => sum + f.stats.uniqueViews, 0);
-                const avgWords = total ? Math.round(words / total) : 0;
-                const firstPubDate = new Date(Math.min(...authorWorks.map(f => new Date(f.created_at))));
-                const first = firstPubDate.toLocaleDateString('ru-RU');
-
-                statsEl.innerHTML = `
-            <p><strong>Фанфиков:</strong> ${total}</p>
-            <p><strong>Всего слов:</strong> ${words.toLocaleString('ru-RU')}</p>
-            <p><strong>Всего просмотров:</strong> ${views.toLocaleString('ru-RU')}</p>
-            <p><strong>Уникальных читателей:</strong> ${unique.toLocaleString('ru-RU')}</p>
-            <p><strong>Среднее слов на фанфик:</strong> ${avgWords.toLocaleString('ru-RU')}</p>
-            <p><strong>Первый фанфик:</strong> ${first}</p>
-        `;
-
-                authorWorks.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
-
-                listEl.innerHTML = '';
-                for (const f of authorWorks) {
-                    const item = document.createElement('div');
-                    item.className = 'author-fanfic-item';
-                    const dateStr = new Date(f.created_at).toLocaleDateString('ru-RU');
-                    const wordsStr = f.wordCount.toLocaleString('ru-RU');
-                    const viewsStr = f.stats.views;
-
-                    item.innerHTML = `
-                <h4>${f.title}</h4>
-                <p>${dateStr} • ${wordsStr} слов • ${viewsStr} просмотров</p>
-                <button class="read-button-small" data-id="${f.id}" data-title="${f.title}" 
-                    data-raw="${f.raw_url}" data-date="${f.created_at}">Читать</button>
+            statsEl.innerHTML = `
+                <p><strong>Фанфиков:</strong> ${total}</p>
+                <p><strong>Всего слов:</strong> ${words.toLocaleString('ru-RU')}</p>
+                <p><strong>Всего просмотров:</strong> ${views.toLocaleString('ru-RU')}</p>
+                <p><strong>Уникальных читателей:</strong> ${unique.toLocaleString('ru-RU')}</p>
+                <p><strong>Среднее слов на фанфик:</strong> ${avgWords.toLocaleString('ru-RU')}</p>
+                <p><strong>Первый фанфик:</strong> ${first}</p>
             `;
 
-                    const readBtn = item.querySelector('.read-button-small');
-                    readBtn.onclick = () => {
-                        loadFanficContent(f.id, f.raw_url, f.title, f.created_at, authorName, f.stats);
-                    };
+            authorWorks.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
 
-                    listEl.appendChild(item);
-                }
-            } catch (err) {
-                console.error('Ошибка в viewAuthorHistory:', err);
-                statsEl.innerHTML = `<p>Ошибка: ${err.message || 'неизвестная ошибка'}</p>`;
+            listEl.innerHTML = '';
+            for (const f of authorWorks) {
+                const item = document.createElement('div');
+                item.className = 'author-fanfic-item';
+                const dateStr = new Date(f.created_at).toLocaleDateString('ru-RU');
+                const wordsStr = f.wordCount.toLocaleString('ru-RU');
+                const viewsStr = f.stats.views;
+
+                item.innerHTML = `
+                    <h4>${f.title}</h4>
+                    <p>${dateStr} • ${wordsStr} слов • ${viewsStr} просмотров</p>
+                    <button class="read-button-small" data-id="${f.id}" data-title="${f.title}" 
+                        data-raw="${f.raw_url}" data-date="${f.created_at}">Читать</button>
+                `;
+
+                const readBtn = item.querySelector('.read-button-small');
+                readBtn.onclick = () => {
+                    // Use dummy stats for guest
+                    loadFanficContent(f.id, f.raw_url, f.title, f.created_at, authorName, f.stats || { views: 0, uniqueViews: 0 });
+                };
+
+                listEl.appendChild(item);
             }
+        } catch (err) {
+            console.error('Ошибка в viewAuthorHistory:', err);
+            statsEl.innerHTML = `<p>Ошибка: ${err.message || 'неизвестная ошибка'}</p>`;
         }
+    }
 
-        async function showStatsModal() {
-            const modal = document.getElementById('statsModal');
-            const el = document.getElementById('globalStats');
-            el.textContent = 'Загрузка...';
-            modal.style.display = 'block';
+    async function showStatsModal() {
+        const modal = document.getElementById('statsModal');
+        const el = document.getElementById('globalStats');
+        el.textContent = 'Загрузка...';
+        modal.style.display = 'block';
 
-            try {
-                const fanficsResp = await fetch(`${API_BASE}/api/fanfics`);
-                const fanfics = await fanficsResp.json();
-                let totalViews = 0, totalUnique = 0, maxViews = 0, topTitle = '';
+        try {
+            const fanficsResp = await fetch(`${API_BASE}/api/fanfics`);
+            const fanfics = await fanficsResp.json();
+            let totalViews = 0, totalUnique = 0, maxViews = 0, topTitle = '';
 
-                for (const f of fanfics) {
-                    const stats = await fetch(`${API_BASE}/api/fanfic-stats?gist_id=${f.id}`).then(r => r.json());
-                    totalViews += stats.views;
-                    totalUnique += stats.uniqueViews;
-                    if (stats.views > maxViews) {
-                        maxViews = stats.views;
-                        topTitle = f.title;
-                    }
+            for (const f of fanfics) {
+                const stats = await fetch(`${API_BASE}/api/fanfic-stats?gist_id=${f.id}`).then(r => r.json());
+                totalViews += stats.views;
+                totalUnique += stats.uniqueViews;
+                if (stats.views > maxViews) {
+                    maxViews = stats.views;
+                    topTitle = f.title;
                 }
+            }
 
-                el.innerHTML = `
+            el.innerHTML = `
                 <p><strong>Всего фанфиков:</strong> ${fanfics.length}</p>
                 <p><strong>Общие просмотры:</strong> ${totalViews.toLocaleString('ru-RU')}</p>
-                <p><strong>Уникальные читатели:</strong> ${totalUnique.toLocaleString('ru-RU')}</p>
+                <p><strong>Уникальные читатели:</<strong> ${totalUnique.toLocaleString('ru-RU')}</p>
                 <p><strong>Самый популярный:</strong> ${topTitle} (${maxViews} просмотров)</p>
             `;
-            } catch (err) {
-                el.textContent = `Ошибка: ${err.message}`;
-            }
+        } catch (err) {
+            el.textContent = `Ошибка: ${err.message}`;
         }
-    </script>
+    }
+</script>
+    
 </body>
 
 </html>
